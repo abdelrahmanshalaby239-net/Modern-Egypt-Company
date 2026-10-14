@@ -14,14 +14,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import type { PostingAccount } from "@/lib/accounts";
 import type { FormState } from "@/lib/errors";
 import { parseDate } from "@/lib/format";
-import { formatCents } from "@/lib/money";
+import { PAYMENT_STATUS_LABELS, paymentStatus } from "@/lib/labels";
+import { formatBalance, formatCents, parseCents, plainCents } from "@/lib/money";
 import {
   formatQty,
   lineTotalCents,
@@ -33,7 +33,8 @@ import {
 import { postPurchaseInvoice } from "../actions";
 
 export type PurchaseItem = { id: number; code: string; name: string; unit: string; typeLabel: string; qty: string };
-type Party = { id: number; name: string };
+// balance = رصيد المورد الحالي من القيود (مدين موجب = دفعة مقدمة، دائن سالب = مستحق له)
+type Supplier = { id: number; name: string; balance: string };
 type Line = { key: number; item_id: string; qty: string; unit_price: string };
 
 const emptyLine = (key: number): Line => ({ key, item_id: "", qty: "", unit_price: "" });
@@ -45,7 +46,7 @@ export function PurchaseForm({
   treasuries,
 }: {
   defaultDate: string;
-  suppliers: Party[];
+  suppliers: Supplier[];
   items: PurchaseItem[];
   treasuries: PostingAccount[];
 }) {
@@ -54,7 +55,7 @@ export function PurchaseForm({
   const [supplierId, setSupplierId] = useState("");
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<Line[]>([emptyLine(1)]);
-  const [paidNow, setPaidNow] = useState(false);
+  const [paid, setPaid] = useState("0");
   const [treasuryId, setTreasuryId] = useState(String(treasuries[0]?.id ?? ""));
   const [clientError, setClientError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -79,6 +80,14 @@ export function PurchaseForm({
   const supplier = suppliers.find((s) => String(s.id) === supplierId);
   const treasury = treasuries.find((t) => String(t.id) === treasuryId);
 
+  // المدفوع الآن: من صفر (آجل بالكامل) حتى إجمالي الفاتورة، والباقي على حساب المورد
+  const paidCents = parseCents(paid);
+  const paidValue = paidCents ?? 0n;
+  const remaining = total - paidValue;
+  const status = paymentStatus(total, paidValue);
+  // رصيد مدين للمورد = سداد سابق لم تقابله فاتورة (مثل سداد فاتورة أُلغيت)
+  const advance = supplier ? (parseCents(supplier.balance, { signed: true }) ?? 0n) : 0n;
+
   const validate = (): string => {
     if (!parseDate(docDate)) return "تاريخ الفاتورة غير صحيح. اكتبه بصيغة يوم/شهر/سنة.";
     if (!supplier) return "اختر المورد.";
@@ -94,7 +103,10 @@ export function PurchaseForm({
       if (p.price === null) return `السطر ${n}: سعر الوحدة غير صالح (رقم موجب بأربع خانات عشرية كحد أقصى).`;
       if ((p.total ?? 0n) <= 0n) return `السطر ${n}: إجمالي السطر يجب أن يكون أكبر من صفر.`;
     }
-    if (paidNow && !treasury) return "اختر الخزينة أو البنك المدفوع منه.";
+    if (paidCents === null) return "المدفوع الآن غير صالح (صفر أو رقم موجب بخانتين عشريتين كحد أقصى).";
+    if (paidCents > total)
+      return `المدفوع الآن ${formatCents(paidCents)} أكبر من إجمالي الفاتورة ${formatCents(total)}.`;
+    if (paidCents > 0n && !treasury) return "اختر الخزينة أو البنك المدفوع منه.";
     return "";
   };
 
@@ -110,7 +122,8 @@ export function PurchaseForm({
     formData.set("doc_date", docDate);
     formData.set("supplier_id", supplierId);
     formData.set("notes", notes);
-    formData.set("paid_treasury_account_id", paidNow ? treasuryId : "");
+    formData.set("paid_amount", plainCents(paidValue));
+    formData.set("paid_treasury_account_id", paidValue > 0n ? treasuryId : "");
     formData.set(
       "lines",
       JSON.stringify(
@@ -152,6 +165,11 @@ export function PurchaseForm({
                 </option>
               ))}
             </NativeSelect>
+            {supplier && (
+              <div className="text-xs text-muted-foreground">
+                رصيد المورد الحالي: <span dir="ltr">{formatBalance(supplier.balance)}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -254,13 +272,31 @@ export function PurchaseForm({
           <Input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-[12rem_1fr] sm:items-end">
-          <Label>
-            <Checkbox checked={paidNow} onChange={(e) => setPaidNow(e.target.checked)} />
-            مدفوعة الآن
-          </Label>
-          {paidNow && (
+        <div className="grid gap-3 rounded-md border p-3">
+          <div className="font-semibold">السداد</div>
+          <div className="grid gap-3 sm:grid-cols-[12rem_1fr] sm:items-end">
             <div className="grid gap-2">
+              <Label htmlFor="paid">المدفوع الآن</Label>
+              <Input
+                id="paid"
+                dir="ltr"
+                inputMode="decimal"
+                value={paid}
+                aria-invalid={paidCents === null || paidValue > total}
+                onChange={(e) => setPaid(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setPaid("0")}>
+                آجل بالكامل
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => setPaid(plainCents(total))}>
+                سداد كامل الإجمالي
+              </Button>
+            </div>
+          </div>
+          {paidValue > 0n && (
+            <div className="grid max-w-md gap-2">
               <Label htmlFor="treasury">من الخزينة/البنك</Label>
               <NativeSelect id="treasury" value={treasuryId} onChange={(e) => setTreasuryId(e.target.value)}>
                 {treasuries.map((t) => (
@@ -271,10 +307,44 @@ export function PurchaseForm({
               </NativeSelect>
             </div>
           )}
+          {paidValue > 0n && treasuries.length === 0 && (
+            <Alert variant="warning">لا توجد خزينة أو بنك نشط. حدّد حساب الخزينة من دليل الحسابات أولًا.</Alert>
+          )}
+          <dl className="grid gap-2 text-sm sm:grid-cols-4">
+            <div>
+              <dt className="text-muted-foreground">إجمالي الفاتورة</dt>
+              <dd dir="ltr" className="text-end font-semibold tabular-nums sm:text-start">
+                {formatCents(total)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">المدفوع الآن</dt>
+              <dd dir="ltr" className="text-end font-semibold tabular-nums sm:text-start">
+                {formatCents(paidValue)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">المتبقي (آجل على المورد)</dt>
+              <dd
+                dir="ltr"
+                className={`text-end font-semibold tabular-nums sm:text-start ${remaining < 0n ? "text-destructive" : ""}`}
+              >
+                {formatCents(remaining)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">حالة السداد</dt>
+              <dd className="font-semibold">{PAYMENT_STATUS_LABELS[status]}</dd>
+            </div>
+          </dl>
+          {advance > 0n && (
+            <Alert variant="warning">
+              للمورد رصيد مدين {formatCents(advance)} (سداد سابق لم تقابله فاتورة، مثل سداد فاتورة ملغاة). لو هذه
+              الفاتورة تصحيح لفاتورة ملغاة سُددت من قبل، اترك المدفوع الآن صفرًا: السداد السابق يُخصم من رصيد المورد
+              تلقائيًا، والدفع مرة أخرى يكرر السداد.
+            </Alert>
+          )}
         </div>
-        {paidNow && treasuries.length === 0 && (
-          <Alert variant="warning">لا توجد خزينة أو بنك نشط. حدّد حساب الخزينة من دليل الحسابات أولًا.</Alert>
-        )}
 
         {error && <Alert>{error}</Alert>}
 
@@ -290,13 +360,19 @@ export function PurchaseForm({
           <AlertDialogHeader>
             <AlertDialogTitle>تأكيد اعتماد فاتورة المشتريات</AlertDialogTitle>
             <AlertDialogDescription>
-              فاتورة من المورد {supplier?.name} بإجمالي {formatCents(total)} ({used.length} صنف).{" "}
-              {paidNow && treasury
-                ? `سيُسجَّل معها سند صرف بكامل المبلغ من ${treasury.code} - ${treasury.name}. `
-                : "الفاتورة آجلة على حساب المورد. "}
+              فاتورة من المورد {supplier?.name} بإجمالي {formatCents(total)} ({used.length} صنف) —{" "}
+              {PAYMENT_STATUS_LABELS[status]}.{" "}
+              {paidValue > 0n && treasury
+                ? `سيُسجَّل معها سند صرف بمبلغ ${formatCents(paidValue)} من ${treasury.code} - ${treasury.name}، والمتبقي ${formatCents(remaining)} آجل على حساب المورد. `
+                : "الإجمالي كله آجل على حساب المورد بلا سند صرف. "}
               لا يمكن تعديل الفاتورة أو حذفها بعد الاعتماد، والتصحيح يكون بإلغائها ثم إدخالها من جديد.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {paidValue > 0n && advance > 0n && (
+            <Alert variant="warning">
+              للمورد رصيد مدين {formatCents(advance)} من سداد سابق. تأكد أن هذا السداد لا يكرر دفعة سابقة.
+            </Alert>
+          )}
           <AlertDialogFooter>
             <Button type="button" onClick={post}>
               اعتماد

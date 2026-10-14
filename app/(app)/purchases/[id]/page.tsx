@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PrintButton } from "@/components/print-button";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,7 +16,8 @@ import {
 } from "@/components/ui/table";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
-import { formatAmount } from "@/lib/money";
+import { PAYMENT_STATUS_LABELS, paymentStatus } from "@/lib/labels";
+import { formatAmount, formatBalance, formatCents, sumAmounts } from "@/lib/money";
 import { formatQty, formatUnitCost } from "@/lib/quantity";
 import { CancelPurchaseButton } from "./cancel-purchase-button";
 
@@ -29,13 +31,21 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
   const { supabase } = await requireUser();
   const { data: invoice } = await supabase
     .from("purchase_invoices")
-    .select("id, doc_no, doc_date, total::text, notes, journal_entry_id, payment_voucher_id, supplier:suppliers(id, name)")
+    .select(
+      "id, doc_no, doc_date, total::text, paid_amount::text, notes, journal_entry_id, payment_voucher_id, supplier:suppliers(id, name)",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!invoice) notFound();
 
-  const [{ data: lines }, { data: entry }, { data: reversal }, { data: voucher }, { data: settings }] =
-    await Promise.all([
+  const [
+    { data: lines },
+    { data: entry },
+    { data: reversal },
+    { data: voucher },
+    { data: settings },
+    { data: supplierBalances },
+  ] = await Promise.all([
       supabase
         .from("purchase_invoice_lines")
         .select("id, qty::text, unit_price::text, line_total::text, item:items(id, code, name, unit)")
@@ -50,7 +60,7 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
       invoice.payment_voucher_id
         ? supabase
             .from("vouchers")
-            .select("id, doc_no, journal_entry_id")
+            .select("id, doc_no, amount::text, journal_entry_id")
             .eq("id", invoice.payment_voucher_id)
             .maybeSingle()
         : Promise.resolve({ data: null }),
@@ -59,12 +69,21 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
         .select("company_name, company_address, company_phone, currency_symbol")
         .eq("id", 1)
         .single(),
+      supabase.rpc("party_balances", { p_party_kind: "supplier" }),
     ]);
   // سند «مدفوع الآن» ملغى = لقيده قيد عكسي
   const { data: voucherReversal } = voucher
     ? await supabase.from("journal_entries").select("id").eq("reverses_entry_id", voucher.journal_entry_id).maybeSingle()
     : { data: null };
-  const activeVoucher = voucher && !voucherReversal ? { id: voucher.id, doc_no: voucher.doc_no } : null;
+  const activeVoucher =
+    voucher && !voucherReversal ? { id: voucher.id, doc_no: voucher.doc_no, amount: voucher.amount } : null;
+
+  // السداد كما كان عند الاعتماد (لا يتغير بسندات لاحقة)، ورصيد المورد الحالي من كل فواتيره وسنداته
+  const totalCents = sumAmounts([invoice.total]);
+  const paidCents = sumAmounts([invoice.paid_amount]);
+  const status = paymentStatus(totalCents, paidCents);
+  const supplierBalance =
+    (supplierBalances ?? []).find((b) => b.party_id === invoice.supplier?.id)?.balance ?? "0.00";
 
   const title = `فاتورة مشتريات رقم ${invoice.doc_no}`;
 
@@ -113,8 +132,8 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
                 </Link>
               )}
             </dd>
-            <dt className="text-muted-foreground">السداد</dt>
-            <dd>{invoice.payment_voucher_id ? "مدفوعة الآن" : "آجل"}</dd>
+            <dt className="text-muted-foreground">حالة السداد عند الاعتماد</dt>
+            <dd className="font-semibold">{PAYMENT_STATUS_LABELS[status]}</dd>
             {invoice.notes && (
               <>
                 <dt className="text-muted-foreground">البيان</dt>
@@ -165,11 +184,43 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
                     {formatAmount(invoice.total)} {settings?.currency_symbol}
                   </TableCell>
                 </TableRow>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={4}>المدفوع عند الاعتماد</TableCell>
+                  <TableCell dir="ltr" className="text-start tabular-nums">
+                    {formatAmount(invoice.paid_amount)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={4}>المتبقي عند الاعتماد (آجل على المورد)</TableCell>
+                  <TableCell dir="ltr" className="text-start tabular-nums">
+                    {formatCents(totalCents - paidCents)}
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </div>
 
+          {reversal && activeVoucher && (
+            <Alert variant="warning" className="print:hidden">
+              الفاتورة ملغاة، وسند الصرف رقم {activeVoucher.doc_no} بمبلغ {formatAmount(activeVoucher.amount)} ما
+              زال ساريًا: المبلغ دفعة مقدمة للمورد (رصيد مدين). عند إدخال الفاتورة المصححة اترك المدفوع الآن صفرًا حتى
+              لا يتكرر السداد، أو ألغِ السند من صفحته لو لم يتم الدفع فعلًا.
+            </Alert>
+          )}
+
           <div className="grid gap-1 text-sm text-muted-foreground print:hidden">
+            {invoice.supplier && (
+              <div>
+                رصيد المورد الحالي (من كل فواتيره وسنداته):{" "}
+                <Link
+                  href={`/ledger?supplier=${invoice.supplier.id}`}
+                  className="font-semibold text-foreground underline"
+                >
+                  <span dir="ltr">{formatBalance(supplierBalance)}</span>
+                </Link>
+                . المتبقي عند الاعتماد لا يتغير بالسندات اللاحقة لأنها لا تُخصص لفاتورة بعينها.
+              </div>
+            )}
             {entry && (
               <div>
                 القيد المحاسبي:{" "}
@@ -180,11 +231,11 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
             )}
             {voucher && (
               <div>
-                سُددت بـ{" "}
+                المدفوع عند الاعتماد بـ{" "}
                 <Link href={`/vouchers/payment/${voucher.id}`} className="font-semibold text-foreground underline">
                   سند الصرف رقم {voucher.doc_no}
                 </Link>
-                {voucherReversal ? " (ملغى)" : reversal ? " — السند ما زال ساريًا ويُلغى من صفحته عند الحاجة" : ""}
+                {voucherReversal ? " (السند ملغى، فالسداد لم يعد قائمًا)" : ""}
               </div>
             )}
             {reversal && (

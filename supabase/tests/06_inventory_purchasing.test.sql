@@ -406,15 +406,15 @@ select throws_ok(
 -- ---------------------------------------------------------------------
 select throws_ok(
   $$select public.post_purchase_invoice('1990-01-20', pg_temp.supp('م1 اختبار'),
-      jsonb_build_array(pg_temp.pl('T-LABSA', '100', '50')), null, pg_temp.acc('1501'))$$,
+      jsonb_build_array(pg_temp.pl('T-LABSA', '100', '50')), null, '5000', pg_temp.acc('1501'))$$,
   'P0001', 'اختر خزينة أو بنكًا',
   '«مدفوع الآن» من حساب ليس خزينة مرفوض'
 );
 
 select lives_ok(
   $$select public.post_purchase_invoice('1990-01-20', pg_temp.supp('م1 اختبار'), jsonb_build_array(
-      pg_temp.pl('T-LABSA', '100', '50'), pg_temp.pl('T-SALT', '3', '7')), null, pg_temp.acc('1101'))$$,
-  'فاتورة مدفوعة الآن من الخزينة'
+      pg_temp.pl('T-LABSA', '100', '50'), pg_temp.pl('T-SALT', '3', '7')), null, '5021', pg_temp.acc('1101'))$$,
+  'فاتورة مدفوعة بالكامل الآن من الخزينة'
 );
 
 select results_eq(

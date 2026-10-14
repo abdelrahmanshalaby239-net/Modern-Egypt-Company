@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { requireUser } from "@/lib/auth";
 import { formatDate, parseDate, yearStartIso } from "@/lib/format";
+import { PAYMENT_STATUS_LABELS, paymentStatus } from "@/lib/labels";
 import { formatAmount, formatCents, sumAmounts } from "@/lib/money";
 
 export const metadata: Metadata = { title: "فواتير المشتريات" };
@@ -38,7 +39,9 @@ export default async function PurchasesPage({ searchParams }: PageProps<"/purcha
     p_to: to ?? undefined,
     p_search: q || undefined,
   });
-  const total = sumAmounts((invoices ?? []).filter((i) => !i.is_cancelled).map((i) => i.total));
+  const active = (invoices ?? []).filter((i) => !i.is_cancelled);
+  const total = sumAmounts(active.map((i) => i.total));
+  const paid = sumAmounts(active.map((i) => i.paid_amount));
 
   return (
     <div className="grid gap-4">
@@ -69,6 +72,11 @@ export default async function PurchasesPage({ searchParams }: PageProps<"/purcha
 
       {invalidDate && <Alert>التاريخ غير صحيح. اكتبه بصيغة يوم/شهر/سنة.</Alert>}
 
+      <p className="text-xs text-muted-foreground">
+        المدفوع وحالة السداد كما كانا عند اعتماد الفاتورة. سندات الصرف اللاحقة لا تُخصص لفواتير بعينها، فالرصيد
+        الحالي لكل مورد يظهر في شاشة الموردين وكشف حسابه.
+      </p>
+
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
@@ -77,8 +85,9 @@ export default async function PurchasesPage({ searchParams }: PageProps<"/purcha
               <TableHead>التاريخ</TableHead>
               <TableHead>المورد</TableHead>
               <TableHead>البيان</TableHead>
-              <TableHead>السداد</TableHead>
               <TableHead className="text-end">الإجمالي</TableHead>
+              <TableHead className="text-end">المدفوع عند الاعتماد</TableHead>
+              <TableHead>السداد عند الاعتماد</TableHead>
               <TableHead>الحالة</TableHead>
             </TableRow>
           </TableHeader>
@@ -95,26 +104,34 @@ export default async function PurchasesPage({ searchParams }: PageProps<"/purcha
                 </TableCell>
                 <TableCell>{i.supplier_name}</TableCell>
                 <TableCell className="whitespace-normal">{i.notes}</TableCell>
-                <TableCell>{i.payment_voucher_id ? "مدفوعة الآن" : "آجل"}</TableCell>
                 <TableCell dir="ltr" className="text-start tabular-nums">
                   {formatAmount(i.total)}
+                </TableCell>
+                <TableCell dir="ltr" className="text-start tabular-nums">
+                  {formatAmount(i.paid_amount)}
+                </TableCell>
+                <TableCell>
+                  {PAYMENT_STATUS_LABELS[paymentStatus(sumAmounts([i.total]), sumAmounts([i.paid_amount]))]}
                 </TableCell>
                 <TableCell>{i.is_cancelled && <Badge>ملغاة</Badge>}</TableCell>
               </TableRow>
             ))}
             {(invoices ?? []).length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-6 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-6 text-center text-muted-foreground">
                   لا توجد فواتير مشتريات في هذه الفترة.
                 </TableCell>
               </TableRow>
             ) : (
               <TableRow className="font-bold hover:bg-transparent">
-                <TableCell colSpan={5}>الإجمالي (بدون الملغاة)</TableCell>
+                <TableCell colSpan={4}>الإجمالي (بدون الملغاة)</TableCell>
                 <TableCell dir="ltr" className="text-start tabular-nums">
                   {formatCents(total)}
                 </TableCell>
-                <TableCell />
+                <TableCell dir="ltr" className="text-start tabular-nums">
+                  {formatCents(paid)}
+                </TableCell>
+                <TableCell colSpan={2} />
               </TableRow>
             )}
           </TableBody>

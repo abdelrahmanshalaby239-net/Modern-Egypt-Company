@@ -353,6 +353,7 @@ export type Database = {
           id: number
           journal_entry_id: number
           notes: string | null
+          paid_amount: number
           payment_voucher_id: number | null
           supplier_id: number
           total: number
@@ -364,6 +365,7 @@ export type Database = {
           id?: never
           journal_entry_id: number
           notes?: string | null
+          paid_amount?: number
           payment_voucher_id?: number | null
           supplier_id: number
           total: number
@@ -375,6 +377,7 @@ export type Database = {
           id?: never
           journal_entry_id?: number
           notes?: string | null
+          paid_amount?: number
           payment_voucher_id?: number | null
           supplier_id?: number
           total?: number
@@ -820,6 +823,7 @@ export type Database = {
           p_doc_date: string
           p_lines: Json
           p_notes?: string
+          p_paid_amount?: string
           p_paid_treasury_account_id?: number
           p_supplier_id: number
         }
@@ -863,6 +867,7 @@ export type Database = {
           is_cancelled: boolean
           journal_entry_id: number
           notes: string
+          paid_amount: string
           payment_voucher_id: number
           supplier_name: string
           total: string

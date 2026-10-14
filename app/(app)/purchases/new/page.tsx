@@ -11,7 +11,8 @@ export const metadata: Metadata = { title: "فاتورة مشتريات جديد
 
 export default async function NewPurchasePage() {
   const { supabase } = await requireUser();
-  const [{ data: suppliers }, { data: items }, { data: balances }, treasuries] = await Promise.all([
+  const [{ data: suppliers }, { data: items }, { data: balances }, treasuries, { data: supplierBalances }] =
+    await Promise.all([
     supabase.from("suppliers").select("id, name").eq("is_active", true).order("name"),
     // فاتورة المشتريات للخامات ومواد التعبئة فقط (المنتج التام يدخل بالإنتاج)
     supabase
@@ -22,8 +23,10 @@ export default async function NewPurchasePage() {
       .order("code"),
     supabase.rpc("stock_balances"),
     getTreasuryAccounts(supabase),
+    supabase.rpc("party_balances", { p_party_kind: "supplier" }),
   ]);
   const qtyOf = new Map((balances ?? []).map((b) => [b.item_id, b.qty]));
+  const balanceOf = new Map((supplierBalances ?? []).map((b) => [b.party_id, b.balance]));
 
   const missing = (suppliers ?? []).length === 0 || (items ?? []).length === 0;
 
@@ -45,7 +48,7 @@ export default async function NewPurchasePage() {
       ) : (
         <PurchaseForm
           defaultDate={formatDate(todayIso())}
-          suppliers={suppliers ?? []}
+          suppliers={(suppliers ?? []).map((s) => ({ ...s, balance: balanceOf.get(s.id) ?? "0.00" }))}
           items={(items ?? []).map((i) => ({
             id: i.id,
             code: i.code,

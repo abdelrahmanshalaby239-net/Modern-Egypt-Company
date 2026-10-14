@@ -100,3 +100,18 @@ export const MOVEMENT_KIND_LABELS: Record<string, string> = {
   stock_adjustment: "تسوية جرد",
   reversal: "إلغاء",
 };
+
+// حالة سداد الفاتورة عند اعتمادها: المدفوع الآن مقابل الإجمالي (المشتريات الآن، والمبيعات في المرحلة 6).
+// تاريخية: السندات اللاحقة لا تُخصص لفواتير بعينها، فالرصيد الحالي للطرف يُقرأ من كشف حسابه.
+export type PaymentStatus = "unpaid" | "partial" | "paid";
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  unpaid: "غير مدفوعة (آجل)",
+  partial: "مدفوعة جزئيًا",
+  paid: "مدفوعة بالكامل",
+};
+
+export function paymentStatus(totalCents: bigint, paidCents: bigint): PaymentStatus {
+  if (paidCents <= 0n) return "unpaid";
+  return paidCents >= totalCents ? "paid" : "partial";
+}

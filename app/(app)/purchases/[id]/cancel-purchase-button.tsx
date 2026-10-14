@@ -15,10 +15,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { formatAmount } from "@/lib/money";
 import { useFormAction } from "@/lib/use-form-action";
 import { cancelPurchaseInvoice } from "../actions";
 
-// voucher = سند «مدفوع الآن» الساري: لا يُلغى مع الفاتورة (قرار المرحلة 4)، فننبه إليه
+// voucher = سند السداد الساري: لا يُلغى مع الفاتورة، ويبقى دفعة مقدمة للمورد، فننبه إليه
 export function CancelPurchaseButton({
   id,
   title,
@@ -26,7 +27,7 @@ export function CancelPurchaseButton({
 }: {
   id: number;
   title: string;
-  voucher: { id: number; doc_no: number } | null;
+  voucher: { id: number; doc_no: number; amount: string } | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -48,12 +49,12 @@ export function CancelPurchaseButton({
         </AlertDialogHeader>
         {voucher && (
           <Alert variant="warning">
-            هذه الفاتورة سُددت بـ{" "}
+            سُدد من هذه الفاتورة {formatAmount(voucher.amount)} بـ{" "}
             <Link href={`/vouchers/payment/${voucher.id}`} className="font-semibold underline">
               سند الصرف رقم {voucher.doc_no}
             </Link>
-            ، والسند لا يُلغى مع الفاتورة ويبقى رصيده للمورد. لو لم يعد السداد صحيحًا ألغِ السند من صفحته،
-            حتى لا يتكرر السداد عند إدخال الفاتورة من جديد.
+            . السند لا يُلغى مع الفاتورة: يبقى المبلغ دفعة مقدمة للمورد (رصيد مدين). عند إدخال الفاتورة المصححة اترك
+            المدفوع الآن صفرًا حتى لا يتكرر السداد، أو ألغِ السند من صفحته لو لم يتم الدفع فعلًا.
           </Alert>
         )}
         <CancelForm id={id} />
