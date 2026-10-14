@@ -41,6 +41,7 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     { data: voucher },
     { data: purchase },
     { data: adjustment },
+    { data: production },
     { data: stockMoves },
   ] = await Promise.all([
     supabase
@@ -62,12 +63,15 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     entry.source_type === "voucher"
       ? supabase.from("vouchers").select("id, kind, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
-    // قيود المشتريات وتسوية الجرد تُلغى من صفحة المستند
+    // قيود المشتريات وتسوية الجرد والإنتاج تُلغى من صفحة المستند
     entry.source_type === "purchase"
       ? supabase.from("purchase_invoices").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
     entry.source_type === "stock_adjustment"
       ? supabase.from("stock_adjustments").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    entry.source_type === "production"
+      ? supabase.from("production_orders").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
     // قيد مخزون أول المدة: إلغاؤه يعكس حركاته
     entry.source_type === "opening"
@@ -146,6 +150,15 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
                 تسوية الجرد رقم {adjustment.doc_no}
               </Link>
               {!reversal && " · يُلغى من صفحة التسوية"}
+            </div>
+          )}
+          {production && (
+            <div>
+              قيد{" "}
+              <Link href={`/production/${production.id}`} className="font-semibold text-foreground underline">
+                أمر الإنتاج رقم {production.doc_no}
+              </Link>
+              {!reversal && " · يُلغى من صفحة أمر الإنتاج"}
             </div>
           )}
           {isStockOpening && <div>قيد مخزون أول المدة (له حركات مخزون)</div>}

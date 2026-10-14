@@ -54,3 +54,21 @@ export async function getTreasuryAccounts(supabase: Client): Promise<PostingAcco
     .order("code");
   return data ?? [];
 }
+
+// الحساب الدائن للتكاليف الإضافية في الإنتاج: خزينة أو بنك، أو حساب خصوم ليس من حسابات النظام (مثل
+// المصروفات المستحقة). نفس قاعدة post_production_order؛ المصروفات غير مسموحة حتى لا تُحسب التكلفة مرتين.
+export async function getExtraCostAccounts(supabase: Client): Promise<PostingAccount[]> {
+  const [{ data: accounts }, { data: system }] = await Promise.all([
+    supabase
+      .from("accounts")
+      .select("id, code, name, type, is_treasury")
+      .eq("is_postable", true)
+      .eq("is_active", true)
+      .order("code"),
+    supabase.from("system_accounts").select("account_id"),
+  ]);
+  const systemIds = new Set((system ?? []).map((s) => s.account_id));
+  return (accounts ?? [])
+    .filter((a) => a.is_treasury || (a.type === "liability" && !systemIds.has(a.id)))
+    .map(({ id, code, name, type }) => ({ id, code, name, type }));
+}

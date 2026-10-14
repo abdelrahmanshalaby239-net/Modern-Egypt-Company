@@ -23,21 +23,35 @@ import { parseDate } from "@/lib/format";
 import { PAYMENT_STATUS_LABELS, paymentStatus } from "@/lib/labels";
 import { formatBalance, formatCents, parseCents, plainCents } from "@/lib/money";
 import {
+  formatFactor,
   formatQty,
+  formatQtyUnits,
   lineTotalCents,
+  parseFactor,
   parseQty,
   parseUnitPrice,
   plainQty,
   plainUnitPrice,
+  toBaseUnits,
 } from "@/lib/quantity";
 import { postPurchaseInvoice } from "../actions";
 
-export type PurchaseItem = { id: number; code: string; name: string; unit: string; typeLabel: string; qty: string };
+// units = الوحدات البديلة النشطة للصنف (الوحدة الأساسية دائمًا متاحة بمعامل 1)
+export type PurchaseItem = {
+  id: number;
+  code: string;
+  name: string;
+  unit: string;
+  typeLabel: string;
+  qty: string;
+  units: { id: number; name: string; factor: string }[];
+};
 // balance = رصيد المورد الحالي من القيود (مدين موجب = دفعة مقدمة، دائن سالب = مستحق له)
 type Supplier = { id: number; name: string; balance: string };
-type Line = { key: number; item_id: string; qty: string; unit_price: string };
+// unit_id فارغ = الوحدة الأساسية
+type Line = { key: number; item_id: string; unit_id: string; qty: string; unit_price: string };
 
-const emptyLine = (key: number): Line => ({ key, item_id: "", qty: "", unit_price: "" });
+const emptyLine = (key: number): Line => ({ key, item_id: "", unit_id: "", qty: "", unit_price: "" });
 
 export function PurchaseForm({
   defaultDate,
@@ -60,17 +74,26 @@ export function PurchaseForm({
   const [clientError, setClientError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  // تغيير الصنف يعيد الوحدة للأساسية
   const updateLine = (key: number, field: keyof Omit<Line, "key">, value: string) =>
-    setLines((ls) => ls.map((l) => (l.key === key ? { ...l, [field]: value } : l)));
+    setLines((ls) =>
+      ls.map((l) => (l.key === key ? { ...l, [field]: value, ...(field === "item_id" ? { unit_id: "" } : {}) } : l)),
+    );
 
   // إجمالي كل سطر وإجمالي الفاتورة بالقروش (BigInt) — معاينة، وقاعدة البيانات تحسب القيمة المعتمدة
   const parsed = lines.map((l) => {
+    const item = items.find((i) => String(i.id) === l.item_id);
+    const unit = item?.units.find((u) => String(u.id) === l.unit_id);
     const qty = parseQty(l.qty);
     const price = parseUnitPrice(l.unit_price);
+    // الكمية بالوحدة الأساسية (null لو التحويل غير دقيق بثلاث خانات)
+    const base = qty === null ? null : unit ? toBaseUnits(qty, parseFactor(unit.factor) ?? 0n) : qty;
     return {
       line: l,
-      item: items.find((i) => String(i.id) === l.item_id),
+      item,
+      unit,
       qty,
+      base,
       price,
       total: qty !== null && price !== null ? lineTotalCents(qty, price) : null,
     };
@@ -100,6 +123,8 @@ export function PurchaseForm({
       seen.add(p.line.item_id);
       if (p.qty === null) return `السطر ${n}: الكمية غير صالحة (رقم موجب بثلاث خانات عشرية كحد أقصى).`;
       if (p.qty <= 0n) return `السطر ${n}: الكمية يجب أن تكون أكبر من صفر.`;
+      if (p.base === null)
+        return `السطر ${n}: الكمية بالوحدة الأساسية لا تزيد عن ثلاث خانات عشرية. عدّل الكمية أو الوحدة.`;
       if (p.price === null) return `السطر ${n}: سعر الوحدة غير صالح (رقم موجب بأربع خانات عشرية كحد أقصى).`;
       if ((p.total ?? 0n) <= 0n) return `السطر ${n}: إجمالي السطر يجب أن يكون أكبر من صفر.`;
     }
@@ -129,6 +154,7 @@ export function PurchaseForm({
       JSON.stringify(
         used.map((p) => ({
           item_id: p.line.item_id,
+          unit_id: p.unit ? p.unit.id : null,
           qty: plainQty(p.qty ?? 0n),
           unit_price: plainUnitPrice(p.price ?? 0n),
         })),
@@ -174,10 +200,11 @@ export function PurchaseForm({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[46rem] text-sm">
+          <table className="w-full min-w-[56rem] text-sm">
             <thead>
               <tr className="border-b text-muted-foreground">
                 <th className="p-2 text-start font-semibold">الصنف</th>
+                <th className="w-36 p-2 text-start font-semibold">الوحدة</th>
                 <th className="w-32 p-2 text-start font-semibold">الكمية</th>
                 <th className="w-32 p-2 text-start font-semibold">سعر الوحدة</th>
                 <th className="w-32 p-2 text-start font-semibold">الإجمالي</th>
@@ -185,7 +212,7 @@ export function PurchaseForm({
               </tr>
             </thead>
             <tbody>
-              {parsed.map(({ line: l, item, qty, price, total: lineTotal }) => (
+              {parsed.map(({ line: l, item, unit, qty, base, price, total: lineTotal }) => (
                 <tr key={l.key} className="border-b align-top">
                   <td className="p-2">
                     <NativeSelect
@@ -202,9 +229,24 @@ export function PurchaseForm({
                     </NativeSelect>
                     {item && (
                       <div className="pt-1 text-xs text-muted-foreground">
-                        الوحدة: {item.unit} · الرصيد الحالي: <span dir="ltr">{formatQty(item.qty)}</span>
+                        الرصيد الحالي: <span dir="ltr">{formatQty(item.qty)}</span> {item.unit}
                       </div>
                     )}
+                  </td>
+                  <td className="p-2">
+                    <NativeSelect
+                      aria-label="الوحدة"
+                      value={l.unit_id}
+                      disabled={!item}
+                      onChange={(e) => updateLine(l.key, "unit_id", e.target.value)}
+                    >
+                      <option value="">{item?.unit ?? "—"}</option>
+                      {(item?.units ?? []).map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({formatFactor(u.factor)} {item?.unit})
+                        </option>
+                      ))}
+                    </NativeSelect>
                   </td>
                   <td className="p-2">
                     <Input
@@ -215,6 +257,11 @@ export function PurchaseForm({
                       aria-invalid={qty === null}
                       onChange={(e) => updateLine(l.key, "qty", e.target.value)}
                     />
+                    {unit && qty !== null && qty > 0n && (
+                      <div className={`pt-1 text-xs ${base === null ? "text-destructive" : "text-muted-foreground"}`}>
+                        {base === null ? "تحويل غير دقيق" : `= ${formatQtyUnits(base)} ${item?.unit}`}
+                      </div>
+                    )}
                   </td>
                   <td className="p-2">
                     <Input
@@ -245,7 +292,7 @@ export function PurchaseForm({
             </tbody>
             <tfoot>
               <tr className="font-bold">
-                <td className="p-2" colSpan={3}>
+                <td className="p-2" colSpan={4}>
                   إجمالي الفاتورة
                 </td>
                 <td dir="ltr" className="p-2 text-start tabular-nums">

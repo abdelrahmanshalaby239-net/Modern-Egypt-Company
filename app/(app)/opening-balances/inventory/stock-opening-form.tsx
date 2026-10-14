@@ -22,7 +22,7 @@ import { formatCents } from "@/lib/money";
 import { lineTotalCents, parseQty, parseUnitPrice, plainQty, plainUnitPrice } from "@/lib/quantity";
 import { postStockOpening } from "./actions";
 
-export type OpeningItem = { id: number; code: string; name: string; unit: string };
+export type OpeningItem = { id: number; code: string; name: string; unit: string; suggested_cost: string };
 export type OpeningItemGroup = { title: string; items: OpeningItem[] };
 
 type Inputs = { qty: string; unit_cost: string };
@@ -38,14 +38,18 @@ export function StockOpeningForm({
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(postStockOpening, {});
   const [entryDate, setEntryDate] = useState(defaultDate);
-  const [inputs, setInputs] = useState<Record<number, Inputs>>({});
+  // تكلفة الوحدة تبدأ بالتكلفة الافتراضية من بطاقة الصنف (اقتراح قابل للتعديل)
+  const [inputs, setInputs] = useState<Record<number, Inputs>>(() =>
+    Object.fromEntries(groups.flatMap((g) => g.items.map((i) => [i.id, { qty: "", unit_cost: i.suggested_cost }]))),
+  );
   const [clientError, setClientError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const setInput = (id: number, field: keyof Inputs, value: string) =>
     setInputs((s) => ({ ...s, [id]: { ...(s[id] ?? { qty: "", unit_cost: "" }), [field]: value } }));
 
-  // قيمة كل صنف والإجماليات بالقروش (BigInt) — معاينة، وقاعدة البيانات تحسب القيمة المعتمدة
+  // قيمة كل صنف والإجماليات بالقروش (BigInt) — معاينة، وقاعدة البيانات تحسب القيمة المعتمدة.
+  // الصنف يُحتسب فقط لو أُدخلت له كمية (التكلفة المقترحة وحدها لا تجعله سطرًا).
   const rows = groups.flatMap((g) =>
     g.items.map((item) => {
       const input = inputs[item.id] ?? { qty: "", unit_cost: "" };
@@ -54,7 +58,7 @@ export function StockOpeningForm({
       return { item, input, qty, cost, value: qty !== null && cost !== null ? lineTotalCents(qty, cost) : null };
     }),
   );
-  const filled = rows.filter((r) => r.input.qty.trim() || r.input.unit_cost.trim());
+  const filled = rows.filter((r) => r.input.qty.trim());
   const groupTotal = (g: OpeningItemGroup) =>
     filled.filter((r) => g.items.includes(r.item)).reduce((t, r) => t + (r.value ?? 0n), 0n);
   const total = filled.reduce((t, r) => t + (r.value ?? 0n), 0n);
@@ -159,6 +163,9 @@ export function StockOpeningForm({
                             aria-invalid={row?.cost === null}
                             onChange={(e) => setInput(item.id, "unit_cost", e.target.value)}
                           />
+                          {item.suggested_cost && row?.input.unit_cost.trim() === item.suggested_cost && (
+                            <div className="mt-1 text-xs text-muted-foreground">مقترح من بطاقة الصنف</div>
+                          )}
                         </td>
                         <td dir="ltr" className="p-2 text-start tabular-nums">
                           {row?.value ? formatCents(row.value) : ""}

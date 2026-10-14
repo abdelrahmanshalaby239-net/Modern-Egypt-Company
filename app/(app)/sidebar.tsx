@@ -29,6 +29,14 @@ const SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: "التصنيع",
+    items: [
+      { href: "/formulas", label: "الوصفات" },
+      { href: "/production", label: "تسجيل الإنتاج" },
+      { href: "/production/report", label: "تقرير الإنتاج" },
+    ],
+  },
+  {
     title: "الخزينة",
     items: [
       { href: "/vouchers/receipt", label: "سندات القبض" },

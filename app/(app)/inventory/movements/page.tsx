@@ -36,6 +36,7 @@ const DOCUMENT_LABELS: Record<string, string> = {
 function documentHref(sourceType: string, sourceId: number | null, entryId: number | null): string | null {
   if (sourceType === "purchase" && sourceId) return `/purchases/${sourceId}`;
   if (sourceType === "stock_adjustment" && sourceId) return `/stock-adjustments/${sourceId}`;
+  if (sourceType === "production" && sourceId) return `/production/${sourceId}`;
   return entryId ? `/journal/${entryId}` : null;
 }
 

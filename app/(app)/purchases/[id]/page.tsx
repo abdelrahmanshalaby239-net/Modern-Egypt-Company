@@ -18,7 +18,7 @@ import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { PAYMENT_STATUS_LABELS, paymentStatus } from "@/lib/labels";
 import { formatAmount, formatBalance, formatCents, sumAmounts } from "@/lib/money";
-import { formatQty, formatUnitCost } from "@/lib/quantity";
+import { formatFactor, formatQty, formatUnitCost } from "@/lib/quantity";
 import { CancelPurchaseButton } from "./cancel-purchase-button";
 
 export const metadata: Metadata = { title: "فاتورة مشتريات" };
@@ -48,7 +48,9 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
   ] = await Promise.all([
       supabase
         .from("purchase_invoice_lines")
-        .select("id, qty::text, unit_price::text, line_total::text, item:items(id, code, name, unit)")
+        .select(
+          "id, qty::text, unit_price::text, line_total::text, unit_name, factor::text, base_qty::text, item:items(id, code, name, unit)",
+        )
         .eq("invoice_id", id)
         .order("id"),
       supabase.from("journal_entries").select("id, entry_no").eq("id", invoice.journal_entry_id).single(),
@@ -166,9 +168,14 @@ export default async function PurchaseInvoicePage({ params }: PageProps<"/purcha
                         </Link>
                       )}
                     </TableCell>
-                    <TableCell>{l.item?.unit}</TableCell>
+                    <TableCell>{l.unit_name ?? l.item?.unit}</TableCell>
                     <TableCell dir="ltr" className="text-start tabular-nums">
                       {formatQty(l.qty)}
+                      {l.factor && formatFactor(l.factor) !== "1" && (
+                        <div className="text-xs text-muted-foreground">
+                          = {formatQty(l.base_qty)} {l.item?.unit}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell dir="ltr" className="text-start tabular-nums">
                       {formatUnitCost(l.unit_price)}

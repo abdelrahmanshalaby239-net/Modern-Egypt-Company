@@ -104,6 +104,118 @@ export type Database = {
         }
         Relationships: []
       }
+      formula_lines: {
+        Row: {
+          formula_id: number
+          id: number
+          item_id: number
+          qty_per_batch: number
+          unit_id: number | null
+        }
+        Insert: {
+          formula_id: number
+          id?: never
+          item_id: number
+          qty_per_batch: number
+          unit_id?: number | null
+        }
+        Update: {
+          formula_id?: number
+          id?: never
+          item_id?: number
+          qty_per_batch?: number
+          unit_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formula_lines_formula_id_fkey"
+            columns: ["formula_id"]
+            isOneToOne: false
+            referencedRelation: "formulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formula_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formula_lines_unit_fkey"
+            columns: ["unit_id", "item_id"]
+            isOneToOne: false
+            referencedRelation: "item_units"
+            referencedColumns: ["id", "item_id"]
+          },
+        ]
+      }
+      formulas: {
+        Row: {
+          batch_qty: number
+          batch_unit_id: number | null
+          created_at: string
+          finished_item_id: number
+          id: number
+          is_active: boolean
+          name: string
+          notes: string | null
+        }
+        Insert: {
+          batch_qty: number
+          batch_unit_id?: number | null
+          created_at?: string
+          finished_item_id: number
+          id?: never
+          is_active?: boolean
+          name: string
+          notes?: string | null
+        }
+        Update: {
+          batch_qty?: number
+          batch_unit_id?: number | null
+          created_at?: string
+          finished_item_id?: number
+          id?: never
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formulas_batch_unit_fkey"
+            columns: ["batch_unit_id", "finished_item_id"]
+            isOneToOne: false
+            referencedRelation: "item_units"
+            referencedColumns: ["id", "item_id"]
+          },
+          {
+            foreignKeyName: "formulas_finished_item_id_fkey"
+            columns: ["finished_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_categories: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          name?: string
+        }
+        Relationships: []
+      }
       item_stock: {
         Row: {
           avg_cost: number
@@ -133,38 +245,106 @@ export type Database = {
           },
         ]
       }
-      items: {
+      item_units: {
         Row: {
-          code: string
           created_at: string
+          factor: number
           id: number
           is_active: boolean
+          item_id: number
+          name: string
+          sale_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          factor: number
+          id?: never
+          is_active?: boolean
+          item_id: number
+          name: string
+          sale_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          factor?: number
+          id?: never
+          is_active?: boolean
+          item_id?: number
+          name?: string
+          sale_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_units_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          barcode: string | null
+          category_id: number | null
+          code: string
+          created_at: string
+          default_cost: number
+          default_sale_unit_id: number | null
+          id: number
+          is_active: boolean
+          min_stock: number
           name: string
           sale_price: number | null
           type: string
           unit: string
         }
         Insert: {
+          barcode?: string | null
+          category_id?: number | null
           code: string
           created_at?: string
+          default_cost?: number
+          default_sale_unit_id?: number | null
           id?: never
           is_active?: boolean
+          min_stock?: number
           name: string
           sale_price?: number | null
           type: string
           unit: string
         }
         Update: {
+          barcode?: string | null
+          category_id?: number | null
           code?: string
           created_at?: string
+          default_cost?: number
+          default_sale_unit_id?: number | null
           id?: never
           is_active?: boolean
+          min_stock?: number
           name?: string
           sale_price?: number | null
           type?: string
           unit?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "item_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_default_sale_unit_fkey"
+            columns: ["default_sale_unit_id", "id"]
+            isOneToOne: false
+            referencedRelation: "item_units"
+            referencedColumns: ["id", "item_id"]
+          },
+        ]
       }
       journal_entries: {
         Row: {
@@ -279,6 +459,172 @@ export type Database = {
           },
         ]
       }
+      production_lines: {
+        Row: {
+          base_qty: number
+          factor: number
+          id: number
+          item_id: number
+          order_id: number
+          qty: number
+          standard_base_qty: number | null
+          total_cost: number
+          unit_cost: number
+          unit_id: number | null
+          unit_name: string
+        }
+        Insert: {
+          base_qty: number
+          factor: number
+          id?: never
+          item_id: number
+          order_id: number
+          qty: number
+          standard_base_qty?: number | null
+          total_cost: number
+          unit_cost: number
+          unit_id?: number | null
+          unit_name: string
+        }
+        Update: {
+          base_qty?: number
+          factor?: number
+          id?: never
+          item_id?: number
+          order_id?: number
+          qty?: number
+          standard_base_qty?: number | null
+          total_cost?: number
+          unit_cost?: number
+          unit_id?: number | null
+          unit_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_lines_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_lines_unit_fkey"
+            columns: ["unit_id", "item_id"]
+            isOneToOne: false
+            referencedRelation: "item_units"
+            referencedColumns: ["id", "item_id"]
+          },
+        ]
+      }
+      production_orders: {
+        Row: {
+          base_qty_produced: number
+          batches: number
+          created_at: string
+          doc_date: string
+          doc_no: number
+          extra_cost: number
+          extra_cost_account_id: number | null
+          factor: number
+          finished_item_id: number
+          formula_id: number
+          id: number
+          journal_entry_id: number
+          materials_cost: number
+          notes: string | null
+          qty_produced: number
+          total_cost: number
+          unit_cost: number
+          unit_id: number | null
+          unit_name: string
+        }
+        Insert: {
+          base_qty_produced: number
+          batches: number
+          created_at?: string
+          doc_date: string
+          doc_no: number
+          extra_cost?: number
+          extra_cost_account_id?: number | null
+          factor: number
+          finished_item_id: number
+          formula_id: number
+          id?: never
+          journal_entry_id: number
+          materials_cost: number
+          notes?: string | null
+          qty_produced: number
+          total_cost: number
+          unit_cost: number
+          unit_id?: number | null
+          unit_name: string
+        }
+        Update: {
+          base_qty_produced?: number
+          batches?: number
+          created_at?: string
+          doc_date?: string
+          doc_no?: number
+          extra_cost?: number
+          extra_cost_account_id?: number | null
+          factor?: number
+          finished_item_id?: number
+          formula_id?: number
+          id?: never
+          journal_entry_id?: number
+          materials_cost?: number
+          notes?: string | null
+          qty_produced?: number
+          total_cost?: number
+          unit_cost?: number
+          unit_id?: number | null
+          unit_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_orders_extra_cost_account_id_fkey"
+            columns: ["extra_cost_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_orders_finished_item_id_fkey"
+            columns: ["finished_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_orders_formula_id_fkey"
+            columns: ["formula_id"]
+            isOneToOne: false
+            referencedRelation: "formulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_orders_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: true
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_orders_unit_fkey"
+            columns: ["unit_id", "finished_item_id"]
+            isOneToOne: false
+            referencedRelation: "item_units"
+            referencedColumns: ["id", "item_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -305,27 +651,39 @@ export type Database = {
       }
       purchase_invoice_lines: {
         Row: {
+          base_qty: number | null
+          factor: number
           id: number
           invoice_id: number
           item_id: number
           line_total: number
           qty: number
+          unit_id: number | null
+          unit_name: string | null
           unit_price: number
         }
         Insert: {
+          base_qty?: never
+          factor?: number
           id?: never
           invoice_id: number
           item_id: number
           line_total: number
           qty: number
+          unit_id?: number | null
+          unit_name?: string | null
           unit_price: number
         }
         Update: {
+          base_qty?: never
+          factor?: number
           id?: never
           invoice_id?: number
           item_id?: number
           line_total?: number
           qty?: number
+          unit_id?: number | null
+          unit_name?: string | null
           unit_price?: number
         }
         Relationships: [
@@ -342,6 +700,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoice_lines_unit_fkey"
+            columns: ["unit_id", "item_id"]
+            isOneToOne: false
+            referencedRelation: "item_units"
+            referencedColumns: ["id", "item_id"]
           },
         ]
       }
@@ -728,6 +1093,10 @@ export type Database = {
         }[]
       }
       cancel_journal_entry: { Args: { p_entry_id: number }; Returns: number }
+      cancel_production_order: {
+        Args: { p_order_id: number }
+        Returns: number
+      }
       cancel_purchase_invoice: {
         Args: { p_invoice_id: number }
         Returns: number
@@ -737,6 +1106,7 @@ export type Database = {
         Returns: number
       }
       cancel_voucher: { Args: { p_voucher_id: number }; Returns: number }
+      delete_formula: { Args: { p_id: number }; Returns: undefined }
       item_movements: {
         Args: { p_from?: string; p_item_id: number; p_to?: string }
         Returns: {
@@ -818,6 +1188,20 @@ export type Database = {
         }
         Returns: number
       }
+      post_production_order: {
+        Args: {
+          p_batches: string
+          p_doc_date: string
+          p_extra_cost?: string
+          p_extra_cost_account_id?: number
+          p_formula_id: number
+          p_lines: Json
+          p_notes?: string
+          p_qty_produced: string
+          p_unit_id: number
+        }
+        Returns: number
+      }
       post_purchase_invoice: {
         Args: {
           p_doc_date: string
@@ -858,6 +1242,35 @@ export type Database = {
         }
         Returns: number
       }
+      production_list: {
+        Args: {
+          p_from?: string
+          p_item_id?: number
+          p_search?: string
+          p_to?: string
+        }
+        Returns: {
+          base_qty_produced: string
+          base_unit: string
+          batches: string
+          doc_date: string
+          doc_no: number
+          extra_cost: string
+          formula_name: string
+          id: number
+          is_cancelled: boolean
+          item_code: string
+          item_id: number
+          item_name: string
+          journal_entry_id: number
+          materials_cost: string
+          notes: string
+          qty_produced: string
+          total_cost: string
+          unit_cost: string
+          unit_name: string
+        }[]
+      }
       purchase_invoice_list: {
         Args: { p_from?: string; p_search?: string; p_to?: string }
         Returns: {
@@ -873,6 +1286,20 @@ export type Database = {
           total: string
         }[]
       }
+      save_formula: {
+        Args: {
+          p_batch_qty: string
+          p_batch_unit_id: number
+          p_finished_item_id: number
+          p_id: number
+          p_is_active?: boolean
+          p_lines: Json
+          p_name: string
+          p_notes?: string
+        }
+        Returns: number
+      }
+      save_item: { Args: { p_item: Json; p_units?: Json }; Returns: number }
       stock_adjustment_list: {
         Args: { p_from?: string; p_search?: string; p_to?: string }
         Returns: {

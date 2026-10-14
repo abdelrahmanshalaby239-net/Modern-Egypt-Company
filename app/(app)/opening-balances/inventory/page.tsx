@@ -4,6 +4,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { formatDate, yearStartIso } from "@/lib/format";
 import { ITEM_TYPES, ITEM_TYPE_LABELS } from "@/lib/labels";
+import { parseUnitPrice, plainUnitPrice } from "@/lib/quantity";
 import { OpeningTabs } from "../opening-tabs";
 import { PostedOpening } from "../posted-opening";
 import { StockOpeningForm } from "./stock-opening-form";
@@ -20,7 +21,11 @@ export default async function StockOpeningPage() {
   const [{ data: items }, { data: capital }] = active
     ? [{ data: [] }, { data: null }]
     : await Promise.all([
-        supabase.from("items").select("id, code, name, type, unit").eq("is_active", true).order("code"),
+        supabase
+          .from("items")
+          .select("id, code, name, type, unit, default_cost::text")
+          .eq("is_active", true)
+          .order("code"),
         supabase
           .from("system_accounts")
           .select("account:accounts(code, name)")
@@ -30,7 +35,16 @@ export default async function StockOpeningPage() {
 
   const groups = ITEM_TYPES.map((type) => ({
     title: ITEM_TYPE_LABELS[type],
-    items: (items ?? []).filter((i) => i.type === type).map(({ id, code, name, unit }) => ({ id, code, name, unit })),
+    items: (items ?? [])
+      .filter((i) => i.type === type)
+      .map(({ id, code, name, unit, default_cost }) => ({
+        id,
+        code,
+        name,
+        unit,
+        // التكلفة الافتراضية من بطاقة الصنف تُقترح فقط، والمعتمد هو ما يؤكده المستخدم
+        suggested_cost: default_cost && default_cost !== "0.0000" ? plainUnitPrice(parseUnitPrice(default_cost) ?? 0n) : "",
+      })),
   }));
 
   return (
@@ -51,7 +65,8 @@ export default async function StockOpeningPage() {
         <>
           <p className="text-sm text-muted-foreground">
             كمية كل صنف في أول المدة وتكلفة الوحدة. القيمة تُسجَّل على حساب المخزون حسب نوع الصنف، وتصبح
-            تكلفة الوحدة أول متوسط تكلفة للصنف. اترك الصنف فارغًا لو ليس له رصيد.
+            تكلفة الوحدة أول متوسط تكلفة للصنف. تكلفة الوحدة مقترحة من التكلفة الافتراضية في بطاقة الصنف ويمكن
+            تعديلها، ولا يُحتسب إلا الصنف الذي تُدخل له كمية.
           </p>
           <StockOpeningForm
             groups={groups}

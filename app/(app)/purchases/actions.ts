@@ -15,12 +15,14 @@ export async function postPurchaseInvoice(_prev: FormState, formData: FormData):
   const docDate = parseDate(String(formData.get("doc_date") ?? ""));
   if (!docDate) return { error: "تاريخ الفاتورة غير صحيح. اكتبه بصيغة يوم/شهر/سنة." };
 
-  let lines: { item_id: string; qty: string; unit_price: string }[];
+  let lines: { item_id: string; unit_id: string | null; qty: string; unit_price: string }[];
   try {
     const raw = JSON.parse(String(formData.get("lines") ?? "[]"));
     if (!Array.isArray(raw)) throw new Error();
     lines = raw.map((l) => ({
       item_id: String(l?.item_id ?? ""),
+      // فارغ = الوحدة الأساسية
+      unit_id: l?.unit_id == null || l.unit_id === "" ? null : String(l.unit_id),
       qty: String(l?.qty ?? ""),
       unit_price: String(l?.unit_price ?? ""),
     }));
