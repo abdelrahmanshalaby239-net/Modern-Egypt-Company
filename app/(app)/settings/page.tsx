@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth";
-import { CompanyForm, LockDateForm } from "./settings-forms";
+import { CompanyForm } from "./settings-forms";
 
-export const metadata: Metadata = { title: "بيانات الشركة والعملة" };
+export const metadata: Metadata = { title: "بيانات الشركة" };
 
 export default async function SettingsPage() {
   const { supabase } = await requireAdmin();
@@ -13,22 +13,14 @@ export default async function SettingsPage() {
 
   return (
     <div className="grid max-w-2xl gap-6">
-      <h1 className="text-xl font-bold">بيانات الشركة والعملة</h1>
+      <h1 className="text-xl font-bold">بيانات الشركة</h1>
       <Card>
         <CardHeader>
           <CardTitle>بيانات الشركة</CardTitle>
-          <CardDescription>تظهر في رأس الشاشات والمطبوعات.</CardDescription>
+          <CardDescription>تظهر في رأس فواتير المبيعات والمشتريات المطبوعة.</CardDescription>
         </CardHeader>
         <CardContent>
           <CompanyForm settings={settings} />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>قفل الفترة</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <LockDateForm lockDate={settings.lock_date} />
         </CardContent>
       </Card>
     </div>

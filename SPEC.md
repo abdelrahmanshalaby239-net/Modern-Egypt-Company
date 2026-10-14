@@ -16,7 +16,7 @@
 ## 1) النطاق
 
 **داخل النطاق:**
-- شركة واحدة، مخزن واحد، عملة واحدة (الاسم والرمز من الإعدادات).
+- شركة واحدة، مخزن واحد، عملة واحدة ثابتة: **الجنيه المصري** (EGP، الرمز ج.م). مخزّنة في الإعدادات للتقارير ولا تُعدَّل من الواجهة.
 - المشتريات، المبيعات، الخزينة والبنك، المخزون، التصنيع.
 - الدورة المحاسبية الكاملة: أرصدة افتتاحية ← قيود يومية ← دفتر أستاذ ← ميزان مراجعة ← قيود تسوية ← قوائم مالية ← إقفال.
 
@@ -59,7 +59,7 @@
 
 - Supabase Auth (بريد + كلمة مرور) بدون تسجيل ذاتي. المستخدم الجديد يُنشأ من لوحة Supabase، وtrigger ينشئ له `profiles` بدور `accountant`.
 - الأدوار: `admin` و`accountant`.
-- **admin:** كل شيء + الإعدادات + المستخدمين (تغيير الدور فقط) + الإقفال وتاريخ القفل.
+- **admin:** كل شيء + الإعدادات + المستخدمين (تغيير الدور فقط) + إقفال السنة المالية (الذي يحدّث تاريخ القفل تلقائيًا).
 - **accountant:** كل المستندات والتقارير والقيود، بدون الإعدادات والمستخدمين والإقفال.
 - أول admin يُنشأ يدويًا (اشرح الخطوات في README).
 
@@ -70,7 +70,10 @@
 - **accounts:** code, name, type (`asset|liability|equity|revenue|expense`), parent_id, is_postable, is_active, is_treasury (للخزائن والبنوك).
 - **customers / suppliers:** name, phone, address, notes, is_active. (الرصيد يظهر من القيود.)
 - **items:** code, name, type (`raw_material|packaging|finished_good`), unit (نص حر: كجم/لتر/قطعة/عبوة...)، sale_price (للمنتج التام، مقترح وقابل للتعديل)، is_active.
-- **settings (صف واحد):** company_name, currency_name, currency_symbol, lock_date.
+- **settings (صف واحد):**
+  - company_name, company_address, company_phone: بيانات الشركة، تُعدَّل من الإعدادات، وتظهر في رأس فواتير المبيعات والمشتريات المطبوعة.
+  - currency_name, currency_symbol: ثابتة (جنيه مصري / ج.م)، ولا تُعدَّل من الواجهة.
+  - lock_date: لا يُعدَّل يدويًا من الواجهة. يحدّثه إقفال السنة المالية فقط (6.8).
 - **system_accounts (key ← account_id):** `receivables`, `payables`, `inventory_raw`, `inventory_packaging`, `inventory_finished`, `sales_revenue`, `cogs`, `capital`, `retained_earnings`, `inventory_adjustment`.
 - **fiscal_years:** name, start_date, end_date, is_closed.
 
@@ -170,13 +173,14 @@
 5. **المخزون:** الأصناف، أرصدة المخزون (كمية + متوسط التكلفة + القيمة)، حركة صنف، تسوية الجرد.
 6. **التصنيع:** الوصفات، تسجيل الإنتاج، تقرير الإنتاج.
 7. **المحاسبة:** دليل الحسابات، قيود اليومية (قائمة + قيد يدوي)، كشف حساب، ميزان المراجعة، قائمة الدخل، الميزانية العمومية، الأرصدة الافتتاحية، إقفال السنة (admin).
-8. **الإعدادات (admin):** بيانات الشركة والعملة، حسابات النظام، المستخدمون، تاريخ القفل.
+8. **الإعدادات (admin):** بيانات الشركة (الاسم والعنوان والهاتف)، حسابات النظام، المستخدمون.
 
 قواعد الواجهة:
 - كل نموذج في شاشة واحدة بحقول قليلة، والإجماليات تُحسب تلقائيًا.
 - تأكيد قبل الاعتماد مع تنبيه أنه لا يمكن التعديل بعده.
 - في الفاتورة يظهر الرصيد المتاح من الصنف. والقوائم فيها بحث وفلتر تاريخ.
 - كل تقرير: فلتر تاريخ + طباعة نظيفة (A4) + تصدير CSV. وكل فاتورة وسند لها صفحة طباعة.
+- رأس فاتورة المبيعات وفاتورة المشتريات المطبوعة يعرض تلقائيًا اسم الشركة وعنوانها وهاتفها من `settings`.
 - من أي سطر في كشف الحساب أو التقارير يمكن فتح المستند أو القيد المرتبط.
 
 ### تقرير أرباح الأصناف (المبيعات ← أرباح الأصناف)
@@ -217,7 +221,7 @@
 
 ```
 profiles(id, full_name, role)
-settings(id, company_name, currency_name, currency_symbol, lock_date)
+settings(id, company_name, company_address, company_phone, currency_name, currency_symbol, lock_date)
 system_accounts(key, account_id)
 fiscal_years(id, name, start_date, end_date, is_closed)
 accounts(id, code, name, type, parent_id, is_postable, is_active, is_treasury)

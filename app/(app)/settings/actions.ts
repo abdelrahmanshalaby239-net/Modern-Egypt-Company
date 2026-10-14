@@ -4,48 +4,25 @@ import { revalidatePath } from "next/cache";
 
 import { requireAdmin } from "@/lib/auth";
 import { arabicError, NOT_ALLOWED, type FormState } from "@/lib/errors";
-import { formatDate, parseDate } from "@/lib/format";
 import { SYSTEM_ACCOUNT_KEYS } from "@/lib/labels";
 
+// بيانات الشركة فقط (تظهر في رأس الفواتير المطبوعة). العملة ثابتة، وتاريخ القفل يحدّثه إقفال السنة.
 export async function saveCompany(_prev: FormState, formData: FormData): Promise<FormState> {
   const { supabase } = await requireAdmin();
+  const text = (name: string) => String(formData.get(name) ?? "").trim();
   const values = {
-    company_name: String(formData.get("company_name") ?? "").trim(),
-    currency_name: String(formData.get("currency_name") ?? "").trim(),
-    currency_symbol: String(formData.get("currency_symbol") ?? "").trim(),
+    company_name: text("company_name"),
+    company_address: text("company_address") || null,
+    company_phone: text("company_phone") || null,
   };
-  if (!values.company_name || !values.currency_name || !values.currency_symbol) {
-    return { error: "اسم الشركة واسم العملة ورمزها كلها مطلوبة." };
-  }
+  if (!values.company_name) return { error: "اسم الشركة مطلوب." };
 
   const { data, error } = await supabase.from("settings").update(values).eq("id", 1).select("id");
   if (error) return { error: arabicError(error) };
   if (!data.length) return { error: NOT_ALLOWED };
 
   revalidatePath("/", "layout");
-  return { success: "تم حفظ بيانات الشركة والعملة." };
-}
-
-export async function saveLockDate(_prev: FormState, formData: FormData): Promise<FormState> {
-  const { supabase } = await requireAdmin();
-  const raw = String(formData.get("lock_date") ?? "").trim();
-  const lockDate = raw ? parseDate(raw) : null;
-  if (raw && !lockDate) {
-    return { error: "التاريخ غير صحيح. اكتبه بصيغة يوم/شهر/سنة، مثل 31/12/2026." };
-  }
-
-  const { data, error } = await supabase
-    .from("settings")
-    .update({ lock_date: lockDate })
-    .eq("id", 1)
-    .select("id");
-  if (error) return { error: arabicError(error) };
-  if (!data.length) return { error: NOT_ALLOWED };
-
-  revalidatePath("/settings");
-  return {
-    success: lockDate ? `تم تحديد تاريخ القفل: ${formatDate(lockDate)}.` : "تم إلغاء تاريخ القفل.",
-  };
+  return { success: "تم حفظ بيانات الشركة." };
 }
 
 export async function saveSystemAccounts(

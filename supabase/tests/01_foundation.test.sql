@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(28);
+select plan(31);
 
 -- ---------------------------------------------------------------------
 -- RLS والبيانات الأولية
@@ -39,6 +39,12 @@ select results_eq(
            ('inventory_raw', '1301'), ('payables', '2101'), ('receivables', '1201'),
            ('retained_earnings', '3301'), ('sales_revenue', '4101')$$,
   'مفاتيح النظام العشرة مربوطة بالأكواد الصحيحة'
+);
+
+select results_eq(
+  $$select currency_name, currency_symbol from public.settings$$,
+  $$values ('جنيه مصري', 'ج.م')$$,
+  'عملة واحدة: الجنيه المصري'
 );
 
 -- ---------------------------------------------------------------------
@@ -127,8 +133,24 @@ select is(
   'admin يرى كل المستخدمين'
 );
 
-update public.settings set company_name = 'شركة اختبار' where id = 1;
-select is((select company_name from public.settings), 'شركة اختبار', 'admin يعدّل الإعدادات');
+update public.settings
+  set company_name = 'شركة اختبار', company_address = 'العاشر من رمضان', company_phone = '0123456789'
+  where id = 1;
+select results_eq(
+  $$select company_name, company_address, company_phone from public.settings$$,
+  $$values ('شركة اختبار', 'العاشر من رمضان', '0123456789')$$,
+  'admin يعدّل اسم الشركة وعنوانها وهاتفها'
+);
+
+select throws_ok(
+  $$update public.settings set lock_date = '2026-12-31' where id = 1$$,
+  '42501', null, 'تاريخ القفل لا يُعدَّل من الواجهة (يحدّثه إقفال السنة فقط)'
+);
+
+select throws_ok(
+  $$update public.settings set currency_name = 'دولار' where id = 1$$,
+  '42501', null, 'العملة ثابتة ولا تُعدَّل من الواجهة'
+);
 
 update public.profiles set role = 'admin' where id = '22222222-2222-2222-2222-222222222222';
 select is(

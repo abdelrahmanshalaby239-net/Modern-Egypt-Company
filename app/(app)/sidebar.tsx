@@ -16,7 +16,7 @@ const SECTIONS: NavSection[] = [
     title: "الإعدادات",
     adminOnly: true,
     items: [
-      { href: "/settings", label: "بيانات الشركة والعملة" },
+      { href: "/settings", label: "بيانات الشركة" },
       { href: "/settings/system-accounts", label: "حسابات النظام" },
       { href: "/settings/users", label: "المستخدمون" },
     ],

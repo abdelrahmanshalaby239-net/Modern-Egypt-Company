@@ -85,21 +85,27 @@ export type Database = {
       }
       settings: {
         Row: {
+          company_address: string | null
           company_name: string
+          company_phone: string | null
           currency_name: string
           currency_symbol: string
           id: number
           lock_date: string | null
         }
         Insert: {
+          company_address?: string | null
           company_name: string
-          currency_name: string
-          currency_symbol: string
+          company_phone?: string | null
+          currency_name?: string
+          currency_symbol?: string
           id?: number
           lock_date?: string | null
         }
         Update: {
+          company_address?: string | null
           company_name?: string
+          company_phone?: string | null
           currency_name?: string
           currency_symbol?: string
           id?: number
