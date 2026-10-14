@@ -1,0 +1,67 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/cairo";
+
+/* كل ألوان النظام هنا فقط (SPEC §8). لا dark mode في النسخة الأولى. */
+:root {
+  color-scheme: light;
+  --radius: 0.5rem;
+
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+
+  --primary: #87ceeb; /* skyblue: الأزرار */
+  --primary-hover: #6dbbe0;
+  --primary-foreground: #0c4a6e; /* نص الأزرار */
+
+  --muted-foreground: #475569;
+  --accent: #f0f9ff; /* تمييز خفيف عند المرور فقط */
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #87ceeb;
+
+  /* ألوان الحالات للرسائل والتنبيهات فقط */
+  --destructive: #dc2626;
+  --success: #16a34a;
+  --warning: #ea580c;
+}
+
+@theme inline {
+  --font-sans: "Cairo Variable", sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}

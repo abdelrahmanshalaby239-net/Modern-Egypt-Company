@@ -1,0 +1,6 @@
+# إعداد بسيط لـ Supabase CLI (للتشغيل المحلي: supabase start / db reset / test db)
+project_id = "modern-egypt-company"
+
+[auth]
+# لا تسجيل ذاتي: المستخدمون يُنشؤون من لوحة Supabase
+enable_signup = false
