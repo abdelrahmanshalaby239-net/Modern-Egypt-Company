@@ -45,8 +45,8 @@ export default async function OpeningBalancesPage() {
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            أرصدة الحسابات في أول المدة. أرصدة العملاء والموردين لها تبويب مستقل، ومخزون أول المدة
-            يُسجَّل في شاشة المخزون لاحقًا.
+            أرصدة الحسابات في أول المدة. أرصدة العملاء والموردين ومخزون أول المدة لها تبويبات
+            مستقلة.
           </p>
           <OpeningBalancesForm
             groups={groups}

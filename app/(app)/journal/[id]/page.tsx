@@ -34,7 +34,15 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     .maybeSingle();
   if (!entry) notFound();
 
-  const [{ data: lines }, { data: reversal }, { data: original }, { data: voucher }] = await Promise.all([
+  const [
+    { data: lines },
+    { data: reversal },
+    { data: original },
+    { data: voucher },
+    { data: purchase },
+    { data: adjustment },
+    { data: stockMoves },
+  ] = await Promise.all([
     supabase
       .from("journal_lines")
       .select(
@@ -54,7 +62,19 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     entry.source_type === "voucher"
       ? supabase.from("vouchers").select("id, kind, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
+    // قيود المشتريات وتسوية الجرد تُلغى من صفحة المستند
+    entry.source_type === "purchase"
+      ? supabase.from("purchase_invoices").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    entry.source_type === "stock_adjustment"
+      ? supabase.from("stock_adjustments").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    // قيد مخزون أول المدة: إلغاؤه يعكس حركاته
+    entry.source_type === "opening"
+      ? supabase.from("stock_movements").select("id").eq("journal_entry_id", id).limit(1)
+      : Promise.resolve({ data: null }),
   ]);
+  const isStockOpening = (stockMoves ?? []).length > 0;
 
   const totalDebit = sumAmounts((lines ?? []).map((l) => l.debit));
   const totalCredit = sumAmounts((lines ?? []).map((l) => l.credit));
@@ -64,7 +84,17 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     <div className="grid max-w-4xl gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-bold">قيد رقم {entry.entry_no}</h1>
-        {canCancel && <CancelEntryButton id={entry.id} entryNo={entry.entry_no} />}
+        {canCancel && (
+          <CancelEntryButton
+            id={entry.id}
+            entryNo={entry.entry_no}
+            detail={
+              isStockOpening
+                ? "وتخرج كميات مخزون أول المدة من المخزون بنفس تكلفتها. يُرفض الإلغاء لو صُرف جزء منها."
+                : undefined
+            }
+          />
+        )}
       </div>
 
       <Card>
@@ -100,6 +130,25 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
               {!reversal && " · يُلغى من صفحة السند"}
             </div>
           )}
+          {purchase && (
+            <div>
+              قيد{" "}
+              <Link href={`/purchases/${purchase.id}`} className="font-semibold text-foreground underline">
+                فاتورة المشتريات رقم {purchase.doc_no}
+              </Link>
+              {!reversal && " · يُلغى من صفحة الفاتورة"}
+            </div>
+          )}
+          {adjustment && (
+            <div>
+              قيد{" "}
+              <Link href={`/stock-adjustments/${adjustment.id}`} className="font-semibold text-foreground underline">
+                تسوية الجرد رقم {adjustment.doc_no}
+              </Link>
+              {!reversal && " · يُلغى من صفحة التسوية"}
+            </div>
+          )}
+          {isStockOpening && <div>قيد مخزون أول المدة (له حركات مخزون)</div>}
           {original && (
             <div>
               يلغي القيد{" "}

@@ -7,7 +7,7 @@ The file on disk stays plain pgTAP (pg_prove / `supabase test db`).
 import re
 import sys
 
-ASSERT = re.compile(r"^select (is|isnt|ok|results_eq|throws_ok|lives_ok|is_empty|bag_eq)\(", re.M)
+ASSERT = re.compile(r"^select (is|isnt|ok|results_eq|throws_ok|throws_like|lives_ok|is_empty|bag_eq)\(", re.M)
 src = open(sys.argv[1], encoding="utf-8").read()
 src = re.sub(r"^--.*\n", "", src, flags=re.M)          # drop comment lines
 src = re.sub(r"\n{2,}", "\n", src)

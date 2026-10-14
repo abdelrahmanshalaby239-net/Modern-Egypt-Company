@@ -104,6 +104,68 @@ export type Database = {
         }
         Relationships: []
       }
+      item_stock: {
+        Row: {
+          avg_cost: number
+          item_id: number
+          qty: number
+          value: number
+        }
+        Insert: {
+          avg_cost?: number
+          item_id: number
+          qty?: number
+          value?: number
+        }
+        Update: {
+          avg_cost?: number
+          item_id?: number
+          qty?: number
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_stock_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          code: string
+          created_at: string
+          id: number
+          is_active: boolean
+          name: string
+          sale_price: number | null
+          type: string
+          unit: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          name: string
+          sale_price?: number | null
+          type: string
+          unit: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          name?: string
+          sale_price?: number | null
+          type?: string
+          unit?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           created_at: string
@@ -241,6 +303,106 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_invoice_lines: {
+        Row: {
+          id: number
+          invoice_id: number
+          item_id: number
+          line_total: number
+          qty: number
+          unit_price: number
+        }
+        Insert: {
+          id?: never
+          invoice_id: number
+          item_id: number
+          line_total: number
+          qty: number
+          unit_price: number
+        }
+        Update: {
+          id?: never
+          invoice_id?: number
+          item_id?: number
+          line_total?: number
+          qty?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoice_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_invoices: {
+        Row: {
+          created_at: string
+          doc_date: string
+          doc_no: number
+          id: number
+          journal_entry_id: number
+          notes: string | null
+          payment_voucher_id: number | null
+          supplier_id: number
+          total: number
+        }
+        Insert: {
+          created_at?: string
+          doc_date: string
+          doc_no: number
+          id?: never
+          journal_entry_id: number
+          notes?: string | null
+          payment_voucher_id?: number | null
+          supplier_id: number
+          total: number
+        }
+        Update: {
+          created_at?: string
+          doc_date?: string
+          doc_no?: number
+          id?: never
+          journal_entry_id?: number
+          notes?: string | null
+          payment_voucher_id?: number | null
+          supplier_id?: number
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoices_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: true
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoices_payment_voucher_id_fkey"
+            columns: ["payment_voucher_id"]
+            isOneToOne: true
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoices_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           company_address: string | null
@@ -270,6 +432,133 @@ export type Database = {
           lock_date?: string | null
         }
         Relationships: []
+      }
+      stock_adjustments: {
+        Row: {
+          counted_qty: number
+          created_at: string
+          doc_date: string
+          doc_no: number
+          id: number
+          item_id: number
+          journal_entry_id: number
+          notes: string | null
+          system_qty: number
+          total_cost: number
+          unit_cost: number
+        }
+        Insert: {
+          counted_qty: number
+          created_at?: string
+          doc_date: string
+          doc_no: number
+          id?: never
+          item_id: number
+          journal_entry_id: number
+          notes?: string | null
+          system_qty: number
+          total_cost: number
+          unit_cost: number
+        }
+        Update: {
+          counted_qty?: number
+          created_at?: string
+          doc_date?: string
+          doc_no?: number
+          id?: never
+          item_id?: number
+          journal_entry_id?: number
+          notes?: string | null
+          system_qty?: number
+          total_cost?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_adjustments_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_adjustments_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: true
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          id: number
+          item_id: number
+          journal_entry_id: number
+          kind: string
+          movement_date: string
+          qty_in: number
+          qty_out: number
+          reverses_movement_id: number | null
+          source_id: number | null
+          source_type: string
+          total_cost: number
+          unit_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          item_id: number
+          journal_entry_id: number
+          kind: string
+          movement_date: string
+          qty_in?: number
+          qty_out?: number
+          reverses_movement_id?: number | null
+          source_id?: number | null
+          source_type: string
+          total_cost?: number
+          unit_cost?: number
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          item_id?: number
+          journal_entry_id?: number
+          kind?: string
+          movement_date?: string
+          qty_in?: number
+          qty_out?: number
+          reverses_movement_id?: number | null
+          source_id?: number | null
+          source_type?: string
+          total_cost?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_reverses_movement_id_fkey"
+            columns: ["reverses_movement_id"]
+            isOneToOne: true
+            referencedRelation: "stock_movements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppliers: {
         Row: {
@@ -436,7 +725,33 @@ export type Database = {
         }[]
       }
       cancel_journal_entry: { Args: { p_entry_id: number }; Returns: number }
+      cancel_purchase_invoice: {
+        Args: { p_invoice_id: number }
+        Returns: number
+      }
+      cancel_stock_adjustment: {
+        Args: { p_adjustment_id: number }
+        Returns: number
+      }
       cancel_voucher: { Args: { p_voucher_id: number }; Returns: number }
+      item_movements: {
+        Args: { p_from?: string; p_item_id: number; p_to?: string }
+        Returns: {
+          balance_qty: string
+          balance_value: string
+          doc_no: number
+          journal_entry_id: number
+          kind: string
+          movement_date: string
+          movement_id: number
+          qty_in: string
+          qty_out: string
+          source_id: number
+          source_type: string
+          total_cost: string
+          unit_cost: string
+        }[]
+      }
       journal_entry_list: {
         Args: { p_from?: string; p_search?: string; p_to?: string }
         Returns: {
@@ -500,6 +815,33 @@ export type Database = {
         }
         Returns: number
       }
+      post_purchase_invoice: {
+        Args: {
+          p_doc_date: string
+          p_lines: Json
+          p_notes?: string
+          p_paid_treasury_account_id?: number
+          p_supplier_id: number
+        }
+        Returns: number
+      }
+      post_stock_adjustment: {
+        Args: {
+          p_counted_qty: string
+          p_doc_date: string
+          p_item_id: number
+          p_notes?: string
+        }
+        Returns: number
+      }
+      post_stock_opening: {
+        Args: {
+          p_difference_to_capital?: boolean
+          p_entry_date: string
+          p_lines: Json
+        }
+        Returns: number
+      }
       post_voucher: {
         Args: {
           p_amount: string
@@ -511,6 +853,50 @@ export type Database = {
           p_treasury_account_id: number
         }
         Returns: number
+      }
+      purchase_invoice_list: {
+        Args: { p_from?: string; p_search?: string; p_to?: string }
+        Returns: {
+          doc_date: string
+          doc_no: number
+          id: number
+          is_cancelled: boolean
+          journal_entry_id: number
+          notes: string
+          payment_voucher_id: number
+          supplier_name: string
+          total: string
+        }[]
+      }
+      stock_adjustment_list: {
+        Args: { p_from?: string; p_search?: string; p_to?: string }
+        Returns: {
+          counted_qty: string
+          doc_date: string
+          doc_no: number
+          id: number
+          is_cancelled: boolean
+          item_code: string
+          item_name: string
+          journal_entry_id: number
+          notes: string
+          system_qty: string
+          total_cost: string
+        }[]
+      }
+      stock_balances: {
+        Args: never
+        Returns: {
+          avg_cost: string
+          code: string
+          is_active: boolean
+          item_id: number
+          name: string
+          qty: string
+          type: string
+          unit: string
+          value: string
+        }[]
       }
       trial_balance: {
         Args: { p_as_of?: string }

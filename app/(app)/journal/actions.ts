@@ -54,5 +54,6 @@ export async function cancelJournalEntry(_prev: FormState, formData: FormData): 
   if (error) return { error: arabicError(error) };
 
   revalidatePath("/journal");
+  revalidatePath("/inventory"); // إلغاء مخزون أول المدة يعكس حركاته
   redirect(`/journal/${reversalId}`);
 }

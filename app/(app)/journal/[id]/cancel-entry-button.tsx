@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useFormAction } from "@/lib/use-form-action";
 import { cancelJournalEntry } from "../actions";
 
-export function CancelEntryButton({ id, entryNo }: { id: number; entryNo: number }) {
+export function CancelEntryButton({ id, entryNo, detail }: { id: number; entryNo: number; detail?: string }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -29,7 +29,8 @@ export function CancelEntryButton({ id, entryNo }: { id: number; entryNo: number
         <AlertDialogHeader>
           <AlertDialogTitle>إلغاء القيد رقم {entryNo}</AlertDialogTitle>
           <AlertDialogDescription>
-            سيُسجَّل قيد عكسي بنفس التاريخ يلغي أثر هذا القيد. لا يمكن التراجع عن الإلغاء.
+            سيُسجَّل قيد عكسي بنفس التاريخ يلغي أثر هذا القيد{detail ? ` ${detail}` : "."} لا يمكن التراجع
+            عن الإلغاء.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <CancelForm id={id} />

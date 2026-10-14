@@ -12,7 +12,22 @@ type NavSection = { title?: string; items: NavItem[]; adminOnly?: boolean };
 const SECTIONS: NavSection[] = [
   { items: [{ href: "/", label: "الرئيسية" }] },
   { title: "المبيعات", items: [{ href: "/customers", label: "العملاء" }] },
-  { title: "المشتريات", items: [{ href: "/suppliers", label: "الموردين" }] },
+  {
+    title: "المشتريات",
+    items: [
+      { href: "/purchases", label: "فواتير المشتريات" },
+      { href: "/suppliers", label: "الموردين" },
+    ],
+  },
+  {
+    title: "المخزون",
+    items: [
+      { href: "/items", label: "الأصناف" },
+      { href: "/inventory", label: "أرصدة المخزون" },
+      { href: "/inventory/movements", label: "حركة صنف" },
+      { href: "/stock-adjustments", label: "تسوية الجرد" },
+    ],
+  },
   {
     title: "الخزينة",
     items: [

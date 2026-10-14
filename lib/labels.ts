@@ -70,3 +70,33 @@ export const COUNTERPART_LABELS: Record<string, string> = {
 export function isVoucherKind(value: string): value is VoucherKind {
   return VOUCHER_KINDS.includes(value as VoucherKind);
 }
+
+// أنواع الأصناف (SPEC §5)، وكل نوع له حساب مخزون في حسابات النظام
+export const ITEM_TYPES = ["raw_material", "packaging", "finished_good"] as const;
+export type ItemType = (typeof ITEM_TYPES)[number];
+
+export const ITEM_TYPE_LABELS: Record<ItemType, string> = {
+  raw_material: "مواد خام",
+  packaging: "مواد تعبئة وتغليف",
+  finished_good: "منتج تام",
+};
+
+export const ITEM_TYPE_ACCOUNT_KEYS: Record<ItemType, string> = {
+  raw_material: "inventory_raw",
+  packaging: "inventory_packaging",
+  finished_good: "inventory_finished",
+};
+
+export function isItemType(value: string): value is ItemType {
+  return ITEM_TYPES.includes(value as ItemType);
+}
+
+// أنواع حركات المخزون
+export const MOVEMENT_KIND_LABELS: Record<string, string> = {
+  opening: "مخزون أول المدة",
+  purchase: "فاتورة مشتريات",
+  production: "إنتاج",
+  sale: "فاتورة مبيعات",
+  stock_adjustment: "تسوية جرد",
+  reversal: "إلغاء",
+};

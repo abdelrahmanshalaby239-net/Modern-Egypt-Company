@@ -2,10 +2,11 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-// جزءا الأرصدة الافتتاحية في هذه المرحلة: كل جزء قيد مستقل (SPEC §6.1)
+// أجزاء الأرصدة الافتتاحية: كل جزء قيد مستقل على حسابات لا تتداخل (SPEC §6.1)
 const TABS = [
   { part: "accounts", href: "/opening-balances", label: "أرصدة الحسابات" },
   { part: "parties", href: "/opening-balances/parties", label: "أرصدة العملاء والموردين" },
+  { part: "inventory", href: "/opening-balances/inventory", label: "مخزون أول المدة" },
 ] as const;
 
 export function OpeningTabs({ active }: { active: (typeof TABS)[number]["part"] }) {
