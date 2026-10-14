@@ -69,11 +69,12 @@ create function pg_temp.v(p_kind text, p_n int) returns bigint language sql stab
     and doc_no = p_n + (select case p_kind when 'receipt' then receipt_no else payment_no end from pg_temp._base);
 $$;
 
--- إدخال مباشر (كمالك الجدول) لرأس قيد وسطر واحد في أمر واحد، لاختبار trigger القاعدة 9
+-- إدخال مباشر (كمالك الجدول) لرأس قيد وسطر واحد في أمر واحد، لاختبار trigger القاعدة 9.
+-- الرأس من نوع سند لأن حسابي العملاء والموردين مسموحان فيه (القيد اليدوي يرفضهما قبل فحص الطرف).
 create function pg_temp.direct_line(p_code text, p_customer bigint, p_supplier bigint) returns void language sql as $$
   with e as (
     insert into public.journal_entries (entry_no, entry_date, description, source_type, created_by)
-    values (-100, '1990-08-01', 'إدخال مباشر', 'manual', '22222222-2222-2222-2222-222222222222')
+    values (-100, '1990-08-01', 'إدخال مباشر', 'voucher', '22222222-2222-2222-2222-222222222222')
     returning id
   )
   insert into public.journal_lines (entry_id, account_id, debit, customer_id, supplier_id)

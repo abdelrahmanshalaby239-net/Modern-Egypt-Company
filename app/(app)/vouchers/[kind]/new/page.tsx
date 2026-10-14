@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Alert } from "@/components/ui/alert";
-import { getManualPostingAccounts, getTreasuryAccounts } from "@/lib/accounts";
+import { getTreasuryAccounts, getVoucherCounterAccounts } from "@/lib/accounts";
 import { requireUser } from "@/lib/auth";
 import { formatDate, todayIso } from "@/lib/format";
 import { VOUCHER_LABELS, isVoucherKind } from "@/lib/labels";
@@ -20,7 +20,7 @@ export default async function NewVoucherPage({ params }: PageProps<"/vouchers/[k
   const { supabase } = await requireUser();
   const [treasuries, accounts, { data: customers }, { data: suppliers }] = await Promise.all([
     getTreasuryAccounts(supabase),
-    getManualPostingAccounts(supabase),
+    getVoucherCounterAccounts(supabase),
     supabase.from("customers").select("id, name").eq("is_active", true).order("name"),
     supabase.from("suppliers").select("id, name").eq("is_active", true).order("name"),
   ]);

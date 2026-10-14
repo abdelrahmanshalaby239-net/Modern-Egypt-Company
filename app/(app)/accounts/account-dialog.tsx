@@ -76,7 +76,8 @@ function AccountForm({
 
   const parent = groups.find((g) => String(g.id) === parentId);
   const type = (parent?.type as AccountType) ?? ownType;
-  const canBeTreasury = type === "asset" && isPostable;
+  // حساب النظام لا يكون خزينة (مفروض في قاعدة البيانات)
+  const canBeTreasury = type === "asset" && isPostable && !isSystem;
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
