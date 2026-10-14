@@ -64,10 +64,11 @@ select results_eq(
     where n.nspname in ('public', 'private') and p.prosecdef and p.proname <> 'rls_auto_enable'
       and has_function_privilege('authenticated', p.oid, 'EXECUTE')
     order by 1$$,
-  $$values ('cancel_journal_entry'::text), ('cancel_purchase_invoice'), ('cancel_stock_adjustment'),
-           ('cancel_voucher'), ('is_admin'), ('post_journal_entry'), ('post_opening_balances'),
-           ('post_party_opening_balances'), ('post_purchase_invoice'), ('post_stock_adjustment'),
-           ('post_stock_opening'), ('post_voucher')$$,
+  $$values ('cancel_journal_entry'::text), ('cancel_production_order'), ('cancel_purchase_invoice'),
+           ('cancel_stock_adjustment'), ('cancel_voucher'), ('delete_formula'), ('is_admin'),
+           ('post_journal_entry'), ('post_opening_balances'), ('post_party_opening_balances'),
+           ('post_production_order'), ('post_purchase_invoice'), ('post_stock_adjustment'),
+           ('post_stock_opening'), ('post_voucher'), ('save_formula'), ('save_item')$$,
   'دوال SECURITY DEFINER المتاحة للمستخدم هي المقصودة فقط'
 );
 
@@ -78,7 +79,8 @@ select is(
                        'to_amount', 'assert_no_party_accounts', 'reverse_entry', 'create_voucher', 'to_qty',
                        'to_unit_price', 'lock_items', 'issue_cost', 'stock_in', 'stock_out', 'reverse_document_stock',
                        'inventory_account', 'item_label', 'check_item_stock', 'check_entry_inventory',
-                       'create_item_stock', 'validate_item')
+                       'create_item_stock', 'validate_item', 'parse_decimal', 'resolve_unit', 'to_base_qty',
+                       'item_is_used', 'unit_is_used', 'validate_item_unit')
      and has_function_privilege('authenticated', p.oid, 'EXECUTE')),
   0::bigint,
   'دوال الاعتماد والترقيم الداخلية غير قابلة للتنفيذ للمستخدم'
