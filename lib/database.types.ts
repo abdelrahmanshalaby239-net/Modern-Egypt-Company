@@ -104,6 +104,47 @@ export type Database = {
         }
         Relationships: []
       }
+      fiscal_years: {
+        Row: {
+          closed_at: string | null
+          closing_entry_id: number | null
+          created_at: string
+          end_date: string
+          id: number
+          is_closed: boolean
+          name: string
+          start_date: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closing_entry_id?: number | null
+          created_at?: string
+          end_date: string
+          id?: never
+          is_closed?: boolean
+          name: string
+          start_date: string
+        }
+        Update: {
+          closed_at?: string | null
+          closing_entry_id?: number | null
+          created_at?: string
+          end_date?: string
+          id?: never
+          is_closed?: boolean
+          name?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fiscal_years_closing_entry_id_fkey"
+            columns: ["closing_entry_id"]
+            isOneToOne: true
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       formula_lines: {
         Row: {
           formula_id: number
@@ -1220,6 +1261,16 @@ export type Database = {
           part: string
         }[]
       }
+      balance_sheet: {
+        Args: { p_as_of?: string }
+        Returns: {
+          account_id: number
+          amount: string
+          code: string
+          name: string
+          section: string
+        }[]
+      }
       cancel_journal_entry: { Args: { p_entry_id: number }; Returns: number }
       cancel_production_order: {
         Args: { p_order_id: number }
@@ -1235,7 +1286,43 @@ export type Database = {
         Returns: number
       }
       cancel_voucher: { Args: { p_voucher_id: number }; Returns: number }
+      close_fiscal_year: { Args: never; Returns: number }
+      dashboard_summary: {
+        Args: never
+        Returns: {
+          inventory: string
+          low_stock_items: number
+          month_end: string
+          month_net_profit: string
+          month_sales: string
+          month_start: string
+          payables: string
+          receivables: string
+          treasury: string
+        }[]
+      }
       delete_formula: { Args: { p_id: number }; Returns: undefined }
+      fiscal_year_closing_preview: {
+        Args: never
+        Returns: {
+          account_id: number
+          code: string
+          credit: string
+          debit: string
+          line_no: number
+          name: string
+        }[]
+      }
+      income_statement: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: {
+          account_id: number
+          amount: string
+          code: string
+          name: string
+          section: string
+        }[]
+      }
       item_movements: {
         Args: { p_from?: string; p_item_id: number; p_to?: string }
         Returns: {
@@ -1308,6 +1395,7 @@ export type Database = {
           total: string
         }[]
       }
+      lock_period: { Args: { p_date: string }; Returns: string }
       party_balances: {
         Args: { p_as_of?: string; p_party_kind: string }
         Returns: {
@@ -1499,6 +1587,10 @@ export type Database = {
         Returns: number
       }
       save_item: { Args: { p_item: Json; p_units?: Json }; Returns: number }
+      save_open_fiscal_year: {
+        Args: { p_end: string; p_name: string; p_start: string }
+        Returns: number
+      }
       stock_adjustment_list: {
         Args: { p_from?: string; p_search?: string; p_to?: string }
         Returns: {

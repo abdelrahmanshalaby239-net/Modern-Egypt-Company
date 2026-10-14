@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
-type NavItem = { href: string; label: string };
+type NavItem = { href: string; label: string; adminOnly?: boolean };
 type NavSection = { title?: string; items: NavItem[]; adminOnly?: boolean };
 
 // القائمة تعرض ما نُفّذ فقط، وتُضاف العناصر مع كل مرحلة (SPEC §8)
@@ -58,7 +58,10 @@ const SECTIONS: NavSection[] = [
       { href: "/journal", label: "قيود اليومية" },
       { href: "/ledger", label: "كشف حساب" },
       { href: "/trial-balance", label: "ميزان المراجعة" },
+      { href: "/income-statement", label: "قائمة الدخل" },
+      { href: "/balance-sheet", label: "الميزانية العمومية" },
       { href: "/opening-balances", label: "الأرصدة الافتتاحية" },
+      { href: "/closing", label: "إقفال السنة", adminOnly: true },
     ],
   },
   {
@@ -92,7 +95,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
               {section.title}
             </div>
           )}
-          {section.items.map((item) => {
+          {section.items.filter((item) => isAdmin || !item.adminOnly).map((item) => {
             const active = item.href === current;
             return (
               <Link

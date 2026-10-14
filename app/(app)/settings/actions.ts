@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/auth";
 import { arabicError, NOT_ALLOWED, type FormState } from "@/lib/errors";
 import { SYSTEM_ACCOUNT_KEYS } from "@/lib/labels";
 
-// بيانات الشركة فقط (تظهر في رأس الفواتير المطبوعة). العملة ثابتة، وتاريخ القفل يحدّثه إقفال السنة.
+// بيانات الشركة فقط (تظهر في رأس الفواتير المطبوعة). العملة ثابتة، وتاريخ القفل يحدّثه القفل الشهري وإقفال السنة (شاشة إقفال السنة).
 export async function saveCompany(_prev: FormState, formData: FormData): Promise<FormState> {
   const { supabase } = await requireAdmin();
   const text = (name: string) => String(formData.get(name) ?? "").trim();
