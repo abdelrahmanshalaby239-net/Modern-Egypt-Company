@@ -65,9 +65,9 @@ select results_eq(
       and has_function_privilege('authenticated', p.oid, 'EXECUTE')
     order by 1$$,
   $$values ('cancel_journal_entry'::text), ('cancel_production_order'), ('cancel_purchase_invoice'),
-           ('cancel_stock_adjustment'), ('cancel_voucher'), ('delete_formula'), ('is_admin'),
-           ('post_journal_entry'), ('post_opening_balances'), ('post_party_opening_balances'),
-           ('post_production_order'), ('post_purchase_invoice'), ('post_stock_adjustment'),
+           ('cancel_sales_invoice'), ('cancel_stock_adjustment'), ('cancel_voucher'), ('delete_formula'),
+           ('is_admin'), ('post_journal_entry'), ('post_opening_balances'), ('post_party_opening_balances'),
+           ('post_production_order'), ('post_purchase_invoice'), ('post_sales_invoice'), ('post_stock_adjustment'),
            ('post_stock_opening'), ('post_voucher'), ('save_formula'), ('save_item')$$,
   'دوال SECURITY DEFINER المتاحة للمستخدم هي المقصودة فقط'
 );

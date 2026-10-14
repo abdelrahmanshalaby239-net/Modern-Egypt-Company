@@ -501,9 +501,11 @@ select throws_ok(
   'P0001', 'لا يمكن تعديل أو حذف مستند معتمد. للتصحيح ألغِ المستند ثم أدخله من جديد',
   'لا حذف لسند معتمد'
 );
--- السندات مرجع لفواتير المشتريات (المرحلة 4)، فتُفرَّغ معها في أمر واحد حتى يصل الطلب إلى trigger المنع
+-- السندات مرجع لفواتير المشتريات (المرحلة 4) والمبيعات (المرحلة 6)، فتُفرَّغ معها في أمر واحد حتى يصل
+-- الطلب إلى trigger المنع
 select throws_ok(
-  $$truncate public.vouchers, public.purchase_invoices, public.purchase_invoice_lines$$,
+  $$truncate public.vouchers, public.purchase_invoices, public.purchase_invoice_lines, public.sales_invoices,
+      public.sales_invoice_lines$$,
   'P0001', 'لا يمكن تعديل أو حذف مستند معتمد. للتصحيح ألغِ المستند ثم أدخله من جديد',
   'لا تفريغ لجدول السندات'
 );
