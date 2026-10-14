@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { DateInput } from "@/components/date-input";
 import { PrintHeader } from "@/components/print-header";
 import { ReportTools } from "@/components/report-tools";
 import { Alert } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
 import {
   Table,
   TableBody,
@@ -20,13 +16,16 @@ import { requireUser } from "@/lib/auth";
 import { formatDate, parseDate, yearStartIso } from "@/lib/format";
 import { SOURCE_TYPE_LABELS } from "@/lib/labels";
 import { formatAmount, formatBalance, formatCents, sumAmounts } from "@/lib/money";
+import { LedgerFilter, type SubjectKind } from "./ledger-filter";
 
 export const metadata: Metadata = { title: "كشف حساب" };
 
 export default async function LedgerPage({ searchParams }: PageProps<"/ledger">) {
   const { supabase } = await requireUser();
   const params = await searchParams;
-  const accountId = Number(params.account) || null;
+  // الكشف لحساب أو عميل أو مورد حسب المعامل الموجود في الرابط
+  const kind: SubjectKind = params.customer ? "customer" : params.supplier ? "supplier" : "account";
+  const subjectId = Number(params[kind]) || null;
   const fromText = typeof params.from === "string" ? params.from : null;
   const toText = typeof params.to === "string" ? params.to : "";
 
@@ -35,19 +34,29 @@ export default async function LedgerPage({ searchParams }: PageProps<"/ledger">)
   const to = toText ? parseDate(toText) : null;
   const invalidDate = (fromText && !from) || (toText && !to);
 
-  const [{ data: accounts }, { data: settings }] = await Promise.all([
-    supabase.from("accounts").select("id, code, name").eq("is_postable", true).order("code"),
-    supabase.from("settings").select("company_name").eq("id", 1).single(),
-  ]);
-  const account = (accounts ?? []).find((a) => a.id === accountId);
+  const [{ data: accounts }, { data: customers }, { data: suppliers }, { data: settings }] =
+    await Promise.all([
+      supabase.from("accounts").select("id, code, name").eq("is_postable", true).order("code"),
+      supabase.from("customers").select("id, name").order("name"),
+      supabase.from("suppliers").select("id, name").order("name"),
+      supabase.from("settings").select("company_name").eq("id", 1).single(),
+    ]);
+  const options = {
+    account: (accounts ?? []).map((a) => ({ id: a.id, label: `${a.code} - ${a.name}` })),
+    customer: (customers ?? []).map((c) => ({ id: c.id, label: c.name })),
+    supplier: (suppliers ?? []).map((s) => ({ id: s.id, label: s.name })),
+  };
+  const subject = options[kind].find((o) => o.id === subjectId);
+  const subjectTitle = subject
+    ? `${kind === "customer" ? "عميل: " : kind === "supplier" ? "مورد: " : ""}${subject.label}`
+    : "";
 
-  const { data: rows } = account
-    ? await supabase.rpc("account_statement", {
-        p_account_id: account.id,
-        p_from: from ?? undefined,
-        p_to: to ?? undefined,
-      })
-    : { data: null };
+  const range = { p_from: from ?? undefined, p_to: to ?? undefined };
+  const { data: rows } = !subject
+    ? { data: null }
+    : kind === "account"
+      ? await supabase.rpc("account_statement", { p_account_id: subject.id, ...range })
+      : await supabase.rpc("party_statement", { p_party_kind: kind, p_party_id: subject.id, ...range });
 
   const movements = (rows ?? []).filter((r) => r.entry_id !== null);
   const totalDebit = sumAmounts(movements.map((r) => r.debit));
@@ -59,9 +68,9 @@ export default async function LedgerPage({ searchParams }: PageProps<"/ledger">)
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <h1 className="text-xl font-bold">كشف حساب</h1>
-        {account && (
+        {subject && (
           <ReportTools
-            filename={`كشف-حساب-${account.code}.csv`}
+            filename={`كشف-حساب-${subject.label}.csv`}
             headers={["التاريخ", "رقم القيد", "النوع", "البيان", "مدين", "دائن", "الرصيد"]}
             rows={(rows ?? []).map((r) => [
               formatDate(r.entry_date),
@@ -76,45 +85,22 @@ export default async function LedgerPage({ searchParams }: PageProps<"/ledger">)
         )}
       </div>
 
-      <form className="flex flex-wrap items-end gap-3 print:hidden">
-        <div className="grid gap-1">
-          <Label htmlFor="account">الحساب</Label>
-          <NativeSelect id="account" name="account" defaultValue={accountId ?? ""} className="w-72">
-            <option value="">اختر الحساب</option>
-            {(accounts ?? []).map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.code} - {a.name}
-              </option>
-            ))}
-          </NativeSelect>
-        </div>
-        <div className="grid gap-1">
-          <Label htmlFor="from">من تاريخ</Label>
-          <DateInput id="from" name="from" defaultValue={from} className="w-36 text-end" />
-        </div>
-        <div className="grid gap-1">
-          <Label htmlFor="to">إلى تاريخ</Label>
-          <DateInput id="to" name="to" defaultValue={to} className="w-36 text-end" />
-        </div>
-        <Button type="submit" variant="outline">
-          عرض
-        </Button>
-      </form>
+      <LedgerFilter options={options} kind={kind} subjectId={subjectId} from={from} to={to} />
 
       {invalidDate && <Alert>التاريخ غير صحيح. اكتبه بصيغة يوم/شهر/سنة.</Alert>}
-      {!account && !invalidDate && (
-        <p className="text-sm text-muted-foreground">اختر حسابًا لعرض كشفه.</p>
+      {!subject && !invalidDate && (
+        <p className="text-sm text-muted-foreground">اختر حسابًا أو عميلًا أو موردًا لعرض كشفه.</p>
       )}
 
-      {account && (
+      {subject && (
         <>
           <PrintHeader
             company={settings?.company_name ?? ""}
-            title={`كشف حساب: ${account.code} - ${account.name}`}
+            title={`كشف حساب ${subjectTitle}`}
             subtitle={period}
           />
           <div className="text-sm text-muted-foreground print:hidden">
-            {account.code} - {account.name} · {period}
+            {subjectTitle} · {period}
           </div>
           <div className="rounded-lg border">
             <Table>

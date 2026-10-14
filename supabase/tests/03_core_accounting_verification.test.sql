@@ -64,14 +64,16 @@ select results_eq(
     where n.nspname in ('public', 'private') and p.prosecdef and p.proname <> 'rls_auto_enable'
       and has_function_privilege('authenticated', p.oid, 'EXECUTE')
     order by 1$$,
-  $$values ('cancel_journal_entry'::text), ('is_admin'), ('post_journal_entry'), ('post_opening_balances')$$,
-  'دوال SECURITY DEFINER المتاحة للمستخدم هي الأربع المقصودة فقط'
+  $$values ('cancel_journal_entry'::text), ('cancel_voucher'), ('is_admin'), ('post_journal_entry'),
+           ('post_opening_balances'), ('post_party_opening_balances'), ('post_voucher')$$,
+  'دوال SECURITY DEFINER المتاحة للمستخدم هي المقصودة فقط'
 );
 
 select is(
   (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'private'
-     and p.proname in ('post_entry', 'next_doc_no', 'require_staff', 'parse_amount', 'assert_no_inventory_accounts')
+     and p.proname in ('post_entry', 'next_doc_no', 'require_staff', 'parse_amount', 'assert_no_inventory_accounts',
+                       'to_amount', 'assert_no_party_accounts', 'reverse_entry')
      and has_function_privilege('authenticated', p.oid, 'EXECUTE')),
   0::bigint,
   'دوال الاعتماد والترقيم الداخلية غير قابلة للتنفيذ للمستخدم'
@@ -202,14 +204,14 @@ select throws_ok(
 select throws_ok(
   $$select public.post_opening_balances('1990-01-01', jsonb_build_array(
       pg_temp.line('1201', '100', '0'), pg_temp.line('3101', '0', '100')))$$,
-  'P0001', 'لا يمكن الترحيل على حساب 1201 - العملاء بدون تحديد عميل أو مورد',
+  'P0001', 'لا يمكن الترحيل يدويًا على حساب 1201 - العملاء. حسابات العملاء والموردين تتحرك من السندات والأرصدة الافتتاحية للأطراف فقط',
   'أرصدة الحسابات لا تقبل حساب العملاء (له جزء خاص في المرحلة 3)'
 );
 
 select throws_ok(
   $$select public.post_opening_balances('1990-01-01', jsonb_build_array(
       pg_temp.line('3101', '100', '0'), pg_temp.line('2101', '0', '100')))$$,
-  'P0001', 'لا يمكن الترحيل على حساب 2101 - الموردين بدون تحديد عميل أو مورد',
+  'P0001', 'لا يمكن الترحيل يدويًا على حساب 2101 - الموردين. حسابات العملاء والموردين تتحرك من السندات والأرصدة الافتتاحية للأطراف فقط',
   'أرصدة الحسابات لا تقبل حساب الموردين (له جزء خاص في المرحلة 3)'
 );
 

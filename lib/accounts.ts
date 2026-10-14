@@ -4,7 +4,7 @@ type Client = Awaited<ReturnType<typeof createClient>>;
 
 export type PostingAccount = { id: number; code: string; name: string; type: string };
 
-// العملاء والموردون يُرحَّل عليهم بطرف (المرحلة 3)، والمخزون من مستنداته فقط
+// العملاء والموردون يتحركون من السندات والأرصدة الافتتاحية للأطراف، والمخزون من مستنداته فقط
 const RESTRICTED_KEYS = [
   "receivables",
   "payables",
@@ -29,4 +29,16 @@ export async function getManualPostingAccounts(supabase: Client): Promise<Postin
     (system ?? []).filter((s) => RESTRICTED_KEYS.includes(s.key)).map((s) => s.account_id),
   );
   return (accounts ?? []).filter((a) => !restricted.has(a.id));
+}
+
+// الخزائن والبنوك النشطة (لسندات القبض والصرف)
+export async function getTreasuryAccounts(supabase: Client): Promise<PostingAccount[]> {
+  const { data } = await supabase
+    .from("accounts")
+    .select("id, code, name, type")
+    .eq("is_treasury", true)
+    .eq("is_postable", true)
+    .eq("is_active", true)
+    .order("code");
+  return data ?? [];
 }

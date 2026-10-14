@@ -59,6 +59,36 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: number
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
       doc_counters: {
         Row: {
           kind: string
@@ -129,26 +159,32 @@ export type Database = {
         Row: {
           account_id: number
           credit: number
+          customer_id: number | null
           debit: number
           description: string | null
           entry_id: number
           id: number
+          supplier_id: number | null
         }
         Insert: {
           account_id: number
           credit?: number
+          customer_id?: number | null
           debit?: number
           description?: string | null
           entry_id: number
           id?: never
+          supplier_id?: number | null
         }
         Update: {
           account_id?: number
           credit?: number
+          customer_id?: number | null
           debit?: number
           description?: string | null
           entry_id?: number
           id?: never
+          supplier_id?: number | null
         }
         Relationships: [
           {
@@ -159,10 +195,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "journal_lines_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "journal_lines_entry_id_fkey"
             columns: ["entry_id"]
             isOneToOne: false
             referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_lines_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -221,6 +271,36 @@ export type Database = {
         }
         Relationships: []
       }
+      suppliers: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: number
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
       system_accounts: {
         Row: {
           account_id: number
@@ -238,6 +318,90 @@ export type Database = {
           {
             foreignKeyName: "system_accounts_account_id_fkey"
             columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vouchers: {
+        Row: {
+          account_id: number | null
+          amount: number
+          created_at: string
+          customer_id: number | null
+          doc_date: string
+          doc_no: number
+          id: number
+          journal_entry_id: number
+          kind: string
+          notes: string | null
+          party_kind: string
+          supplier_id: number | null
+          treasury_account_id: number
+        }
+        Insert: {
+          account_id?: number | null
+          amount: number
+          created_at?: string
+          customer_id?: number | null
+          doc_date: string
+          doc_no: number
+          id?: never
+          journal_entry_id: number
+          kind: string
+          notes?: string | null
+          party_kind: string
+          supplier_id?: number | null
+          treasury_account_id: number
+        }
+        Update: {
+          account_id?: number | null
+          amount?: number
+          created_at?: string
+          customer_id?: number | null
+          doc_date?: string
+          doc_no?: number
+          id?: never
+          journal_entry_id?: number
+          kind?: string
+          notes?: string | null
+          party_kind?: string
+          supplier_id?: number | null
+          treasury_account_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vouchers_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: true
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_treasury_account_id_fkey"
+            columns: ["treasury_account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
             referencedColumns: ["id"]
@@ -262,7 +426,17 @@ export type Database = {
           source_type: string
         }[]
       }
+      active_openings: {
+        Args: never
+        Returns: {
+          entry_date: string
+          entry_id: number
+          entry_no: number
+          part: string
+        }[]
+      }
       cancel_journal_entry: { Args: { p_entry_id: number }; Returns: number }
+      cancel_voucher: { Args: { p_voucher_id: number }; Returns: number }
       journal_entry_list: {
         Args: { p_from?: string; p_search?: string; p_to?: string }
         Returns: {
@@ -274,6 +448,31 @@ export type Database = {
           reverses_entry_id: number
           source_type: string
           total: string
+        }[]
+      }
+      party_balances: {
+        Args: { p_as_of?: string; p_party_kind: string }
+        Returns: {
+          balance: string
+          party_id: number
+        }[]
+      }
+      party_statement: {
+        Args: {
+          p_from?: string
+          p_party_id: number
+          p_party_kind: string
+          p_to?: string
+        }
+        Returns: {
+          balance: string
+          credit: string
+          debit: string
+          description: string
+          entry_date: string
+          entry_id: number
+          entry_no: number
+          source_type: string
         }[]
       }
       post_journal_entry: {
@@ -293,6 +492,26 @@ export type Database = {
         }
         Returns: number
       }
+      post_party_opening_balances: {
+        Args: {
+          p_difference_to_capital?: boolean
+          p_entry_date: string
+          p_lines: Json
+        }
+        Returns: number
+      }
+      post_voucher: {
+        Args: {
+          p_amount: string
+          p_doc_date: string
+          p_kind: string
+          p_notes?: string
+          p_party_id: number
+          p_party_kind: string
+          p_treasury_account_id: number
+        }
+        Returns: number
+      }
       trial_balance: {
         Args: { p_as_of?: string }
         Returns: {
@@ -302,6 +521,26 @@ export type Database = {
           debit: string
           name: string
           type: string
+        }[]
+      }
+      voucher_list: {
+        Args: {
+          p_from?: string
+          p_kind: string
+          p_search?: string
+          p_to?: string
+        }
+        Returns: {
+          amount: string
+          doc_date: string
+          doc_no: number
+          id: number
+          is_cancelled: boolean
+          journal_entry_id: number
+          notes: string
+          party_kind: string
+          party_name: string
+          treasury: string
         }[]
       }
     }

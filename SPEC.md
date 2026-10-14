@@ -131,7 +131,7 @@
 
 1. **الأرصدة الافتتاحية:** ثلاثة أجزاء، كل جزء يُسجَّل مرة واحدة في قيد افتتاحي خاص به (`opening`):
    - أرصدة الحسابات (المرحلة 2)، بدون حسابات العملاء والموردين والمخزون.
-   - رصيد كل عميل/مورد (المرحلة 3).
+   - رصيد كل عميل/مورد (المرحلة 3)، كل الأطراف في قيد واحد على حسابي العملاء والموردين.
    - مخزون أول المدة لكل صنف (كمية + تكلفة الوحدة) مع حركات مخزون افتتاحية (المرحلة 4).
 
    لو قيد الجزء غير متوازن يُعرض الفرق ويُسجَّل على رأس المال بعد تأكيد المستخدم. للتصحيح يُلغى القيد الافتتاحي بقيد عكسي ثم يُسجَّل من جديد.
@@ -148,8 +148,8 @@
 
 - **فاتورة مشتريات** (أصناف خام أو تعبئة فقط): م مخزون الخام أو التعبئة (حسب نوع كل صنف) / د الموردين (+`supplier_id`). مع حركة مخزون وتحديث المتوسط. اختياري: "مدفوع الآن" ينشئ تلقائيًا سند صرف.
 - **فاتورة مبيعات** (منتج تام فقط): م العملاء (+`customer_id`) / د إيرادات المبيعات. وكذلك م تكلفة المبيعات / د مخزون منتج تام بمتوسط التكلفة. اختياري: "مدفوع الآن" ينشئ تلقائيًا سند قبض.
-- **سند قبض:** م الخزينة/البنك المختار / د العميل (العملاء +`customer_id`) أو حساب آخر مختار (مثل إيراد آخر).
-- **سند صرف:** م المورد (الموردين +`supplier_id`) أو حساب مختار (مثل مصروف) / د الخزينة/البنك المختار.
+- **سند قبض:** م الخزينة/البنك المختار / د العميل (العملاء +`customer_id`) أو المورد (الموردين +`supplier_id`، مثل استرداد) أو حساب آخر مختار (مثل إيراد آخر).
+- **سند صرف:** م المورد (الموردين +`supplier_id`) أو العميل (العملاء +`customer_id`، مثل رد دفعة) أو حساب مختار (مثل مصروف) / د الخزينة/البنك المختار.
 - **تسجيل إنتاج:** م مخزون منتج تام (المواد + التكاليف الإضافية) / د مخزون خام (الخام المستهلك) + د مخزون تعبئة (التعبئة المستهلكة) + د الحساب المختار للتكاليف الإضافية (إن وُجدت).
 - **تسوية جرد:** عجز: م فروقات الجرد / د مخزون الصنف. زيادة: العكس. بتكلفة الصنف الحالية.
 - **الإلغاء:** قيد عكسي (`reversal`) بنفس تاريخ القيد الأصلي ومربوط به، ولا يُلغى القيد مرتين.
@@ -241,7 +241,7 @@ purchase_invoices(id, doc_no, doc_date, supplier_id, total, notes, status, journ
 purchase_invoice_lines(id, invoice_id, item_id, qty, unit_price, line_total)
 sales_invoices(id, doc_no, doc_date, customer_id, total, notes, status, journal_entry_id)
 sales_invoice_lines(id, invoice_id, item_id, qty, unit_price, line_total, unit_cost)
-vouchers(id, doc_no, kind, doc_date, treasury_account_id, party_kind, customer_id, supplier_id, account_id, amount, notes, status, journal_entry_id)
+vouchers(id, doc_no, kind, doc_date, treasury_account_id, party_kind, customer_id, supplier_id, account_id, amount, notes, journal_entry_id)
 formulas(id, name, finished_item_id, batch_qty, is_active)
 formula_lines(id, formula_id, item_id, qty_per_batch)
 production_orders(id, doc_no, doc_date, formula_id, finished_item_id, batches, qty_produced, materials_cost, extra_cost, extra_cost_account_id, unit_cost, status, journal_entry_id)
@@ -250,7 +250,7 @@ stock_adjustments(id, doc_no, doc_date, item_id, system_qty, counted_qty, unit_c
 doc_counters(kind, last_no)
 ```
 
-`status` ∈ `posted | cancelled`. و`source_type` ∈ `manual | opening | purchase | sale | voucher | production | stock_adjustment | adjustment | closing | reversal`.
+`status` ∈ `posted | cancelled`. السندات (المرحلة 3) بلا عمود `status`: «ملغى» = لقيد السند قيد عكسي، فالسند لا يُعدَّل أبدًا. و`source_type` ∈ `manual | opening | purchase | sale | voucher | production | stock_adjustment | adjustment | closing | reversal`.
 
 ---
 

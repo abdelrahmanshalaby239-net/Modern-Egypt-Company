@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
-import { SOURCE_TYPE_LABELS } from "@/lib/labels";
+import { SOURCE_TYPE_LABELS, VOUCHER_LABELS, isVoucherKind } from "@/lib/labels";
 import { formatAmount, formatCents, sumAmounts } from "@/lib/money";
 import { CancelEntryButton } from "./cancel-entry-button";
 
@@ -34,10 +34,12 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     .maybeSingle();
   if (!entry) notFound();
 
-  const [{ data: lines }, { data: reversal }, { data: original }] = await Promise.all([
+  const [{ data: lines }, { data: reversal }, { data: original }, { data: voucher }] = await Promise.all([
     supabase
       .from("journal_lines")
-      .select("id, debit::text, credit::text, description, account:accounts(id, code, name)")
+      .select(
+        "id, debit::text, credit::text, description, account:accounts(id, code, name), customer:customers(id, name), supplier:suppliers(id, name)",
+      )
       .eq("entry_id", id)
       .order("id"),
     supabase.from("journal_entries").select("id, entry_no").eq("reverses_entry_id", id).maybeSingle(),
@@ -47,6 +49,10 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
           .select("id, entry_no")
           .eq("id", entry.reverses_entry_id)
           .maybeSingle()
+      : Promise.resolve({ data: null }),
+    // قيد السند يُلغى من صفحة السند
+    entry.source_type === "voucher"
+      ? supabase.from("vouchers").select("id, kind, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
 
@@ -82,6 +88,18 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
               </Link>
             </div>
           )}
+          {voucher && isVoucherKind(voucher.kind) && (
+            <div>
+              قيد{" "}
+              <Link
+                href={`/vouchers/${voucher.kind}/${voucher.id}`}
+                className="font-semibold text-foreground underline"
+              >
+                {VOUCHER_LABELS[voucher.kind].one} رقم {voucher.doc_no}
+              </Link>
+              {!reversal && " · يُلغى من صفحة السند"}
+            </div>
+          )}
           {original && (
             <div>
               يلغي القيد{" "}
@@ -113,6 +131,14 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
                       className="underline-offset-4 hover:underline"
                     >
                       {l.account.code} - {l.account.name}
+                    </Link>
+                  )}
+                  {(l.customer || l.supplier) && (
+                    <Link
+                      href={l.customer ? `/ledger?customer=${l.customer.id}` : `/ledger?supplier=${l.supplier?.id}`}
+                      className="block text-muted-foreground underline-offset-4 hover:underline"
+                    >
+                      {l.customer ? `العميل: ${l.customer.name}` : `المورد: ${l.supplier?.name}`}
                     </Link>
                   )}
                 </TableCell>

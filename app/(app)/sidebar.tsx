@@ -11,6 +11,16 @@ type NavSection = { title?: string; items: NavItem[]; adminOnly?: boolean };
 // القائمة تعرض ما نُفّذ فقط، وتُضاف العناصر مع كل مرحلة (SPEC §8)
 const SECTIONS: NavSection[] = [
   { items: [{ href: "/", label: "الرئيسية" }] },
+  { title: "المبيعات", items: [{ href: "/customers", label: "العملاء" }] },
+  { title: "المشتريات", items: [{ href: "/suppliers", label: "الموردين" }] },
+  {
+    title: "الخزينة",
+    items: [
+      { href: "/vouchers/receipt", label: "سندات القبض" },
+      { href: "/vouchers/payment", label: "سندات الصرف" },
+      { href: "/treasury", label: "أرصدة الخزائن والبنوك" },
+    ],
+  },
   {
     title: "المحاسبة",
     items: [
@@ -32,8 +42,16 @@ const SECTIONS: NavSection[] = [
   },
 ];
 
+// العنصر النشط: أطول رابط يطابق المسار أو يسبقه (مثل /vouchers/receipt/5 ← سندات القبض)
+function activeHref(pathname: string): string | undefined {
+  return SECTIONS.flatMap((s) => s.items.map((i) => i.href))
+    .filter((href) => pathname === href || (href !== "/" && pathname.startsWith(`${href}/`)))
+    .sort((a, b) => b.length - a.length)[0];
+}
+
 export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
+  const current = activeHref(pathname);
 
   return (
     <nav className="flex flex-col gap-5 p-4">
@@ -45,8 +63,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
             </div>
           )}
           {section.items.map((item) => {
-            const active =
-              pathname === item.href || (item.href === "/journal" && pathname.startsWith("/journal/"));
+            const active = item.href === current;
             return (
               <Link
                 key={item.href}
