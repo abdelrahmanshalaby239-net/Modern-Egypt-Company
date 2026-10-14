@@ -10,6 +10,10 @@ export function arabicError(error: { code?: string; message: string }): string {
     case "23502":
     case "23514":
       return "بعض القيم غير صالحة أو ناقصة.";
+    case "22003":
+      return "المبلغ أكبر من الحد المسموح.";
+    case "22P02":
+      return "قيمة غير صالحة.";
     case "42501":
       return "ليست لديك صلاحية لتنفيذ هذه العملية.";
     default:

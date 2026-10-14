@@ -11,7 +11,16 @@ type NavSection = { title?: string; items: NavItem[]; adminOnly?: boolean };
 // القائمة تعرض ما نُفّذ فقط، وتُضاف العناصر مع كل مرحلة (SPEC §8)
 const SECTIONS: NavSection[] = [
   { items: [{ href: "/", label: "الرئيسية" }] },
-  { title: "المحاسبة", items: [{ href: "/accounts", label: "دليل الحسابات" }] },
+  {
+    title: "المحاسبة",
+    items: [
+      { href: "/accounts", label: "دليل الحسابات" },
+      { href: "/journal", label: "قيود اليومية" },
+      { href: "/ledger", label: "كشف حساب" },
+      { href: "/trial-balance", label: "ميزان المراجعة" },
+      { href: "/opening-balances", label: "الأرصدة الافتتاحية" },
+    ],
+  },
   {
     title: "الإعدادات",
     adminOnly: true,
@@ -36,7 +45,8 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
             </div>
           )}
           {section.items.map((item) => {
-            const active = pathname === item.href;
+            const active =
+              pathname === item.href || (item.href === "/journal" && pathname.startsWith("/journal/"));
             return (
               <Link
                 key={item.href}

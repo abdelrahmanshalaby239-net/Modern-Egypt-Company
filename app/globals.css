@@ -65,3 +65,14 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 }
+
+/* طباعة نظيفة على A4 (SPEC §8) */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  body {
+    font-size: 11pt;
+  }
+}

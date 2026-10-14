@@ -27,3 +27,17 @@ export const SYSTEM_ACCOUNT_KEYS: { key: string; label: string; type: AccountTyp
   { key: "retained_earnings", label: "الأرباح المرحّلة", type: "equity" },
   { key: "inventory_adjustment", label: "فروقات جرد المخزون", type: "expense" },
 ];
+
+// أنواع القيود (SPEC §9: source_type)
+export const SOURCE_TYPE_LABELS: Record<string, string> = {
+  manual: "يومية",
+  adjustment: "تسوية",
+  opening: "افتتاحي",
+  reversal: "عكسي",
+  purchase: "مشتريات",
+  sale: "مبيعات",
+  voucher: "سند",
+  production: "إنتاج",
+  stock_adjustment: "تسوية جرد",
+  closing: "إقفال",
+};
