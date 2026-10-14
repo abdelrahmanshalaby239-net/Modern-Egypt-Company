@@ -42,6 +42,7 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     { data: purchase },
     { data: adjustment },
     { data: production },
+    { data: sale },
     { data: stockMoves },
   ] = await Promise.all([
     supabase
@@ -63,7 +64,7 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
     entry.source_type === "voucher"
       ? supabase.from("vouchers").select("id, kind, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
-    // قيود المشتريات وتسوية الجرد والإنتاج تُلغى من صفحة المستند
+    // قيود المشتريات والمبيعات وتسوية الجرد والإنتاج تُلغى من صفحة المستند
     entry.source_type === "purchase"
       ? supabase.from("purchase_invoices").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -72,6 +73,9 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
       : Promise.resolve({ data: null }),
     entry.source_type === "production"
       ? supabase.from("production_orders").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    entry.source_type === "sale"
+      ? supabase.from("sales_invoices").select("id, doc_no").eq("journal_entry_id", id).maybeSingle()
       : Promise.resolve({ data: null }),
     // قيد مخزون أول المدة: إلغاؤه يعكس حركاته
     entry.source_type === "opening"
@@ -159,6 +163,15 @@ export default async function JournalEntryPage({ params }: PageProps<"/journal/[
                 أمر الإنتاج رقم {production.doc_no}
               </Link>
               {!reversal && " · يُلغى من صفحة أمر الإنتاج"}
+            </div>
+          )}
+          {sale && (
+            <div>
+              قيد{" "}
+              <Link href={`/sales/${sale.id}`} className="font-semibold text-foreground underline">
+                فاتورة المبيعات رقم {sale.doc_no}
+              </Link>
+              {!reversal && " · يُلغى من صفحة الفاتورة"}
             </div>
           )}
           {isStockOpening && <div>قيد مخزون أول المدة (له حركات مخزون)</div>}

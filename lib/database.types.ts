@@ -771,6 +771,134 @@ export type Database = {
           },
         ]
       }
+      sales_invoice_lines: {
+        Row: {
+          base_qty: number
+          cost_total: number
+          factor: number
+          id: number
+          invoice_id: number
+          item_id: number
+          line_total: number
+          qty: number
+          unit_cost: number
+          unit_id: number | null
+          unit_name: string
+          unit_price: number
+        }
+        Insert: {
+          base_qty: number
+          cost_total: number
+          factor: number
+          id?: never
+          invoice_id: number
+          item_id: number
+          line_total: number
+          qty: number
+          unit_cost: number
+          unit_id?: number | null
+          unit_name: string
+          unit_price: number
+        }
+        Update: {
+          base_qty?: number
+          cost_total?: number
+          factor?: number
+          id?: never
+          invoice_id?: number
+          item_id?: number
+          line_total?: number
+          qty?: number
+          unit_cost?: number
+          unit_id?: number | null
+          unit_name?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_lines_unit_fkey"
+            columns: ["unit_id", "item_id"]
+            isOneToOne: false
+            referencedRelation: "item_units"
+            referencedColumns: ["id", "item_id"]
+          },
+        ]
+      }
+      sales_invoices: {
+        Row: {
+          created_at: string
+          customer_id: number
+          doc_date: string
+          doc_no: number
+          id: number
+          journal_entry_id: number
+          notes: string | null
+          paid_amount: number
+          receipt_voucher_id: number | null
+          total: number
+        }
+        Insert: {
+          created_at?: string
+          customer_id: number
+          doc_date: string
+          doc_no: number
+          id?: never
+          journal_entry_id: number
+          notes?: string | null
+          paid_amount?: number
+          receipt_voucher_id?: number | null
+          total: number
+        }
+        Update: {
+          created_at?: string
+          customer_id?: number
+          doc_date?: string
+          doc_no?: number
+          id?: never
+          journal_entry_id?: number
+          notes?: string | null
+          paid_amount?: number
+          receipt_voucher_id?: number | null
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoices_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: true
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoices_receipt_voucher_id_fkey"
+            columns: ["receipt_voucher_id"]
+            isOneToOne: true
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       settings: {
         Row: {
           company_address: string | null
@@ -1101,6 +1229,7 @@ export type Database = {
         Args: { p_invoice_id: number }
         Returns: number
       }
+      cancel_sales_invoice: { Args: { p_invoice_id: number }; Returns: number }
       cancel_stock_adjustment: {
         Args: { p_adjustment_id: number }
         Returns: number
@@ -1123,6 +1252,47 @@ export type Database = {
           source_type: string
           total_cost: string
           unit_cost: string
+        }[]
+      }
+      item_profit: {
+        Args: {
+          p_customer_id?: number
+          p_from?: string
+          p_item_id?: number
+          p_to?: string
+        }
+        Returns: {
+          base_unit: string
+          cost: string
+          invoices: number
+          item_code: string
+          item_id: number
+          item_name: string
+          margin: string
+          profit: string
+          qty: string
+          sales: string
+        }[]
+      }
+      item_profit_lines: {
+        Args: {
+          p_customer_id?: number
+          p_from?: string
+          p_item_id: number
+          p_to?: string
+        }
+        Returns: {
+          base_qty: string
+          cost_total: string
+          customer_name: string
+          doc_date: string
+          doc_no: number
+          invoice_id: number
+          line_total: string
+          profit: string
+          qty: string
+          unit_name: string
+          unit_price: string
         }[]
       }
       journal_entry_list: {
@@ -1213,6 +1383,17 @@ export type Database = {
         }
         Returns: number
       }
+      post_sales_invoice: {
+        Args: {
+          p_customer_id: number
+          p_doc_date: string
+          p_lines: Json
+          p_notes?: string
+          p_received_amount?: string
+          p_received_treasury_account_id?: number
+        }
+        Returns: number
+      }
       post_stock_adjustment: {
         Args: {
           p_counted_qty: string
@@ -1283,6 +1464,24 @@ export type Database = {
           paid_amount: string
           payment_voucher_id: number
           supplier_name: string
+          total: string
+        }[]
+      }
+      sales_invoice_list: {
+        Args: { p_from?: string; p_search?: string; p_to?: string }
+        Returns: {
+          cost_total: string
+          customer_id: number
+          customer_name: string
+          doc_date: string
+          doc_no: number
+          gross_profit: string
+          id: number
+          is_cancelled: boolean
+          journal_entry_id: number
+          notes: string
+          paid_amount: string
+          receipt_voucher_id: number
           total: string
         }[]
       }

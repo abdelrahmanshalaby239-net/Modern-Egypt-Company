@@ -37,6 +37,7 @@ function documentHref(sourceType: string, sourceId: number | null, entryId: numb
   if (sourceType === "purchase" && sourceId) return `/purchases/${sourceId}`;
   if (sourceType === "stock_adjustment" && sourceId) return `/stock-adjustments/${sourceId}`;
   if (sourceType === "production" && sourceId) return `/production/${sourceId}`;
+  if (sourceType === "sale" && sourceId) return `/sales/${sourceId}`;
   return entryId ? `/journal/${entryId}` : null;
 }
 

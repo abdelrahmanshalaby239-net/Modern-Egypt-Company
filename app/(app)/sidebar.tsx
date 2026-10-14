@@ -11,7 +11,14 @@ type NavSection = { title?: string; items: NavItem[]; adminOnly?: boolean };
 // القائمة تعرض ما نُفّذ فقط، وتُضاف العناصر مع كل مرحلة (SPEC §8)
 const SECTIONS: NavSection[] = [
   { items: [{ href: "/", label: "الرئيسية" }] },
-  { title: "المبيعات", items: [{ href: "/customers", label: "العملاء" }] },
+  {
+    title: "المبيعات",
+    items: [
+      { href: "/sales", label: "فواتير المبيعات" },
+      { href: "/customers", label: "العملاء" },
+      { href: "/sales/item-profit", label: "أرباح الأصناف" },
+    ],
+  },
   {
     title: "المشتريات",
     items: [

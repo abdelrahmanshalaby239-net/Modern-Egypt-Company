@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CompanyHeader } from "@/components/company-header";
 import { PrintButton } from "@/components/print-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,14 +72,7 @@ export default async function VoucherPage({ params }: PageProps<"/vouchers/[kind
 
       <Card className="print:border-0 print:shadow-none">
         <CardContent className="grid gap-6">
-          <div className="border-b pb-4 text-center">
-            <div className="text-lg font-bold">{settings?.company_name}</div>
-            {(settings?.company_address || settings?.company_phone) && (
-              <div className="text-sm text-muted-foreground">
-                {[settings?.company_address, settings?.company_phone].filter(Boolean).join(" · ")}
-              </div>
-            )}
-          </div>
+          <CompanyHeader settings={settings} />
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="flex items-center gap-2 text-xl font-bold">

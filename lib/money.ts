@@ -45,3 +45,12 @@ export function formatBalance(value: string | null | undefined): string {
   if (cents === 0n) return formatCents(0n);
   return `${formatCents(cents < 0n ? -cents : cents)} ${cents > 0n ? "مدين" : "دائن"}`;
 }
+
+// نسبة مئوية بخانتين (مثل هامش الربح = الربح ÷ المبيعات × 100) مقربة نصف لأعلى بعيدًا عن الصفر
+export function formatPercent(numeratorCents: bigint, denominatorCents: bigint): string {
+  if (denominatorCents <= 0n) return "";
+  const negative = numeratorCents < 0n;
+  const abs = negative ? -numeratorCents : numeratorCents;
+  const hundredths = (2n * abs * 10000n + denominatorCents) / (2n * denominatorCents);
+  return `${negative && hundredths > 0n ? "-" : ""}${hundredths / 100n}.${(hundredths % 100n).toString().padStart(2, "0")}%`;
+}
