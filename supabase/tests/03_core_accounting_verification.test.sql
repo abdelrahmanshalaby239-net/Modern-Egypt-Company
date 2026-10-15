@@ -68,16 +68,6 @@ select is(
   0::bigint,
   'rls_auto_enable غير قابلة للتنفيذ لـ anon و authenticated'
 );
-do $$ begin
-  if exists (select 1 from pg_event_trigger where evtfoid = to_regprocedure('public.rls_auto_enable()')::oid) then
-    create table public.zz_rls_auto_probe (id int);
-  end if;
-end $$;
-select ok(
-  not exists (select 1 from pg_event_trigger where evtfoid = to_regprocedure('public.rls_auto_enable()')::oid)
-  or coalesce((select relrowsecurity from pg_class where oid = to_regclass('public.zz_rls_auto_probe')), false),
-  'التفعيل التلقائي لـ RLS على الجداول الجديدة ما زال يعمل بعد سحب الصلاحية'
-);
 
 select results_eq(
   $$select p.proname::text collate "default" from pg_proc p join pg_namespace n on n.oid = p.pronamespace
@@ -132,6 +122,19 @@ select results_eq(
     order by 1, 2$$,
   $$values ('journal_entries'::text, 'SELECT'::text), ('journal_lines', 'SELECT')$$,
   'صلاحية المستخدم على جداول القيود قراءة فقط، ولا شيء على العدّادات'
+);
+
+-- جدول تجريبي بعد فحوص صلاحيات الجداول (في Supabase يأخذ الجدول الجديد صلاحيات public الافتراضية لـ anon
+-- و authenticated، ويحميه RLS المفعّل تلقائيًا بلا سياسات)
+do $$ begin
+  if exists (select 1 from pg_event_trigger where evtfoid = to_regprocedure('public.rls_auto_enable()')::oid) then
+    create table public.zz_rls_auto_probe (id int);
+  end if;
+end $$;
+select ok(
+  not exists (select 1 from pg_event_trigger where evtfoid = to_regprocedure('public.rls_auto_enable()')::oid)
+  or coalesce((select relrowsecurity from pg_class where oid = to_regclass('public.zz_rls_auto_probe')), false),
+  'التفعيل التلقائي لـ RLS على الجداول الجديدة ما زال يعمل بعد سحب الصلاحية'
 );
 
 -- ---------------------------------------------------------------------
