@@ -144,7 +144,7 @@ select results_eq(
 
 select throws_ok(
   $$update public.settings set lock_date = '2026-12-31' where id = 1$$,
-  '42501', null, 'تاريخ القفل لا يُعدَّل من الواجهة (يحدّثه إقفال السنة فقط)'
+  '42501', null, 'تاريخ القفل لا يُعدَّل مباشرة (يحدّثه القفل الشهري وإقفال السنة فقط)'
 );
 
 select throws_ok(

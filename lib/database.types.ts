@@ -704,7 +704,7 @@ export type Database = {
           unit_price: number
         }
         Insert: {
-          base_qty?: never
+          base_qty?: number | null
           factor?: number
           id?: never
           invoice_id: number
@@ -716,7 +716,7 @@ export type Database = {
           unit_price: number
         }
         Update: {
-          base_qty?: never
+          base_qty?: number | null
           factor?: number
           id?: never
           invoice_id?: number
@@ -1272,10 +1272,7 @@ export type Database = {
         }[]
       }
       cancel_journal_entry: { Args: { p_entry_id: number }; Returns: number }
-      cancel_production_order: {
-        Args: { p_order_id: number }
-        Returns: number
-      }
+      cancel_production_order: { Args: { p_order_id: number }; Returns: number }
       cancel_purchase_invoice: {
         Args: { p_invoice_id: number }
         Returns: number
