@@ -20,7 +20,7 @@ export function OpeningTabs({ active }: { active: (typeof TABS)[number]["part"] 
           className={cn(
             "-mb-px border-b-2 px-3 py-2 text-sm transition-colors",
             active === tab.part
-              ? "border-primary font-semibold"
+              ? "border-foreground font-semibold"
               : "border-transparent text-muted-foreground hover:text-foreground",
           )}
         >

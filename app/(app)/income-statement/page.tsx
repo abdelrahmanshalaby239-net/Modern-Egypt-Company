@@ -123,7 +123,7 @@ export default async function IncomeStatementPage({ searchParams }: PageProps<"/
                   </TableCell>
                 </TableRow>
                 {section.key === "cost_of_sales" && (
-                  <TableRow className="bg-accent/40 font-bold hover:bg-accent/40">
+                  <TableRow className="bg-muted font-bold hover:bg-muted">
                     <TableCell>مجمل الربح (المبيعات − تكلفة المبيعات)</TableCell>
                     <TableCell dir="ltr" className="text-start tabular-nums">
                       {formatCents(gross)}
@@ -134,7 +134,7 @@ export default async function IncomeStatementPage({ searchParams }: PageProps<"/
             );
           })}
           <TableBody>
-            <TableRow className="bg-accent/40 text-base font-bold hover:bg-accent/40">
+            <TableRow className="bg-muted text-base font-bold hover:bg-muted">
               <TableCell>{net < 0n ? "صافي الخسارة" : "صافي الربح"}</TableCell>
               <TableCell dir="ltr" className="text-start tabular-nums">
                 {formatCents(net)}

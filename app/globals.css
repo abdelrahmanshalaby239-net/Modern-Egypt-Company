@@ -2,32 +2,41 @@
 @import "tw-animate-css";
 @import "@fontsource-variable/cairo";
 
-/* كل ألوان النظام هنا فقط (SPEC §8). لا dark mode في النسخة الأولى. */
+/* كل ألوان النظام هنا فقط (SPEC §8): ثيم أحادي هادئ. لا dark mode في النسخة الأولى. */
 :root {
   color-scheme: light;
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
   --background: #ffffff;
-  --foreground: #0f172a;
+  --foreground: #171717; /* النص الأساسي */
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #171717;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #171717;
 
-  --primary: #87ceeb; /* skyblue: الأزرار */
-  --primary-hover: #6dbbe0;
-  --primary-foreground: #0c4a6e; /* نص الأزرار */
+  --primary: #171717; /* الأزرار الرئيسية: أسود بنص أبيض */
+  --primary-hover: #333333;
+  --primary-foreground: #ffffff;
 
-  --muted-foreground: #475569;
-  --accent: #f0f9ff; /* تمييز خفيف عند المرور فقط */
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #87ceeb;
+  --muted: #f7f7f7; /* الأسطح الفاتحة */
+  --muted-foreground: #737373; /* النص الثانوي */
+  --accent: #f7f7f7; /* تمييز خفيف عند المرور */
+  --lavender: #dce3fa; /* لمسة لونية هادئة: العنصر النشط وبطاقة مميزة */
+  --border: #e9e9e9;
+  --input: #e9e9e9;
+  --ring: #a3a3a3;
+
+  /* لمسات باستيل للرسوم والمؤشرات فقط */
+  --chart-1: #dce3fa;
+  --chart-2: #e5e5e5;
+  --chart-3: #f6dfd6;
+  --chart-4: #ecdcf5;
+  --chart-5: #dcf1e1;
 
   /* ألوان الحالات للرسائل والتنبيهات فقط */
   --destructive: #dc2626;
-  --success: #16a34a;
-  --warning: #ea580c;
+  --success: #15803d;
+  --warning: #c2410c;
 }
 
 @theme inline {
@@ -42,8 +51,15 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
+  --color-lavender: var(--lavender);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -63,6 +79,9 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  ::selection {
+    @apply bg-lavender text-foreground;
   }
 }
 

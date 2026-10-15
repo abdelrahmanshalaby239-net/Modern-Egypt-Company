@@ -4,12 +4,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 // ألوان الحالات للرسائل والتنبيهات فقط (SPEC §8)
-const alertVariants = cva("w-full rounded-md border bg-background px-4 py-3 text-sm", {
+const alertVariants = cva("w-full rounded-xl border px-4 py-3 text-sm", {
   variants: {
     variant: {
-      error: "border-destructive/40 text-destructive",
-      success: "border-success/40 text-success",
-      warning: "border-warning/40 text-warning",
+      error: "border-destructive/25 bg-destructive/5 text-destructive",
+      success: "border-success/25 bg-success/5 text-success",
+      warning: "border-warning/25 bg-warning/5 text-warning",
     },
   },
   defaultVariants: {

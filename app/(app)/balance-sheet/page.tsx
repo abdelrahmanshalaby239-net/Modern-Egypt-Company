@@ -124,7 +124,7 @@ export default async function BalanceSheetPage({ searchParams }: PageProps<"/bal
             );
           })}
           <TableBody>
-            <TableRow className="bg-accent/40 font-bold hover:bg-accent/40">
+            <TableRow className="bg-muted font-bold hover:bg-muted">
               <TableCell>إجمالي الخصوم وحقوق الملكية</TableCell>
               <TableCell dir="ltr" className="text-start tabular-nums">
                 {formatCents(liabilities + equity)}
