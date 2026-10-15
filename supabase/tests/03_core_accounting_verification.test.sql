@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(32);
+select plan(34);
 
 -- ---------------------------------------------------------------------
 -- تهيئة معزولة داخل الـ transaction
@@ -57,6 +57,26 @@ select is(
      and has_function_privilege('anon', p.oid, 'EXECUTE')),
   0::bigint,
   'anon لا ينفّذ أي دالة من دوالنا'
+);
+
+-- دالة Supabase public.rls_auto_enable (يستدعيها event trigger ensure_rls ليفعّل RLS على الجداول الجديدة):
+-- التنفيذ مسحوب من anon و authenticated، والتفعيل التلقائي يعمل بدونه (حيث توجد الدالة)
+select is(
+  (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public' and p.proname = 'rls_auto_enable'
+     and (has_function_privilege('anon', p.oid, 'EXECUTE') or has_function_privilege('authenticated', p.oid, 'EXECUTE'))),
+  0::bigint,
+  'rls_auto_enable غير قابلة للتنفيذ لـ anon و authenticated'
+);
+do $$ begin
+  if exists (select 1 from pg_event_trigger where evtfoid = to_regprocedure('public.rls_auto_enable()')::oid) then
+    create table public.zz_rls_auto_probe (id int);
+  end if;
+end $$;
+select ok(
+  not exists (select 1 from pg_event_trigger where evtfoid = to_regprocedure('public.rls_auto_enable()')::oid)
+  or coalesce((select relrowsecurity from pg_class where oid = to_regclass('public.zz_rls_auto_probe')), false),
+  'التفعيل التلقائي لـ RLS على الجداول الجديدة ما زال يعمل بعد سحب الصلاحية'
 );
 
 select results_eq(
