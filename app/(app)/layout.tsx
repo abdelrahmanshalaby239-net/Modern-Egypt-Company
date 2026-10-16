@@ -1,3 +1,4 @@
+import type { Viewport } from "next";
 import { CircleUserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,12 @@ import { ROLE_LABELS } from "@/lib/labels";
 import { signOut } from "./actions";
 import { MobileNav } from "./mobile-nav";
 import { Sidebar } from "./sidebar";
+
+export const viewport: Viewport = { themeColor: "#111111" };
+
+// زر الخروج على الرأس الداكن (نفس زر outline بألوان الرأس)
+const HEADER_BUTTON =
+  "border-white/20 bg-transparent text-header-foreground hover:bg-white/10 focus-visible:ring-white/40";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const { supabase, profile } = await requireUser();
@@ -28,7 +35,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         {/* رأس الموبايل: زر القائمة واسم الشركة والخروج */}
-        <header className="sticky top-0 z-40 flex items-center gap-2 border-b bg-background/95 ps-[max(1rem,env(safe-area-inset-right))] pe-[max(1rem,env(safe-area-inset-left))] pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/85 md:hidden print:hidden">
+        <header className="sticky top-0 z-40 flex items-center gap-2 bg-header ps-[max(1rem,env(safe-area-inset-right))] pe-[max(1rem,env(safe-area-inset-left))] pt-[env(safe-area-inset-top)] text-header-foreground md:hidden print:hidden">
           <div className="flex h-14 min-w-0 flex-1 items-center gap-2">
             <MobileNav
               companyName={settings?.company_name ?? ""}
@@ -38,22 +45,22 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             />
             <span className="min-w-0 flex-1 truncate text-[0.9375rem] font-bold">{settings?.company_name}</span>
             <form action={signOut}>
-              <Button type="submit" variant="outline" size="sm">
+              <Button type="submit" variant="outline" size="sm" className={HEADER_BUTTON}>
                 خروج
               </Button>
             </form>
           </div>
         </header>
         {/* رأس الكمبيوتر */}
-        <header className="hidden items-center justify-end gap-4 border-b px-8 text-sm md:flex md:h-16 print:hidden">
-          <span className="flex min-w-0 items-center gap-2 text-muted-foreground">
+        <header className="hidden items-center justify-end gap-4 bg-header px-8 text-sm text-header-foreground md:flex md:h-16 print:hidden">
+          <span className="flex min-w-0 items-center gap-2">
             <CircleUserRound className="size-5 shrink-0" strokeWidth={1.5} aria-hidden />
             <span className="truncate">
-              {userLabel} · {ROLE_LABELS[profile.role]}
+              {userLabel} <span className="text-header-muted">· {ROLE_LABELS[profile.role]}</span>
             </span>
           </span>
           <form action={signOut}>
-            <Button type="submit" variant="outline" size="sm">
+            <Button type="submit" variant="outline" size="sm" className={HEADER_BUTTON}>
               خروج
             </Button>
           </form>

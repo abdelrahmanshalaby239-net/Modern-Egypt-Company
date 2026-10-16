@@ -24,7 +24,7 @@ export function MobileNav({
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Trigger
         aria-label="فتح القائمة"
-        className="-ms-1.5 flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+        className="-ms-1.5 flex size-10 shrink-0 items-center justify-center rounded-lg text-header-foreground transition-colors hover:bg-white/10 focus-visible:ring-[3px] focus-visible:ring-white/40 focus-visible:outline-none"
       >
         <Menu className="size-5" strokeWidth={1.75} aria-hidden />
       </DialogPrimitive.Trigger>
