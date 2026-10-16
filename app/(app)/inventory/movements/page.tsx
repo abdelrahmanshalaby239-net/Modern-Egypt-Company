@@ -87,7 +87,7 @@ export default async function ItemMovementsPage({ searchParams }: PageProps<"/in
         )}
       </div>
 
-      <form className="flex flex-wrap items-end gap-3 print:hidden">
+      <form className="filter-bar flex flex-wrap items-end gap-3 print:hidden">
         <div className="grid gap-1">
           <Label htmlFor="item">الصنف</Label>
           <NativeSelect id="item" name="item" defaultValue={item ? String(item.id) : ""} className="w-72">

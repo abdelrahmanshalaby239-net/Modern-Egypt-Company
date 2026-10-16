@@ -11,14 +11,14 @@ const TABS = [
 
 export function OpeningTabs({ active }: { active: (typeof TABS)[number]["part"] }) {
   return (
-    <nav className="flex gap-1 border-b">
+    <nav className="flex gap-1 border-b max-sm:scrollbar-subtle max-sm:overflow-x-auto max-sm:overflow-y-hidden">
       {TABS.map((tab) => (
         <Link
           key={tab.part}
           href={tab.href}
           aria-current={active === tab.part ? "page" : undefined}
           className={cn(
-            "-mb-px border-b-2 px-3 py-2 text-sm transition-colors",
+            "-mb-px shrink-0 border-b-2 px-3 py-2 text-sm whitespace-nowrap transition-colors",
             active === tab.part
               ? "border-foreground font-semibold"
               : "border-transparent text-muted-foreground hover:text-foreground",

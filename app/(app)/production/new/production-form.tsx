@@ -336,7 +336,7 @@ export function ProductionForm({
         {formula && (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[60rem] text-sm">
+              <table className="line-table w-full text-sm sm:min-w-[60rem]">
                 <thead>
                   <tr className="border-b text-muted-foreground">
                     <th className="p-2 text-start font-semibold">المادة</th>
@@ -351,7 +351,7 @@ export function ProductionForm({
                 <tbody>
                   {parsed.map(({ line: l, item, unit, qty, base, standard, stock, shortage, cost }) => (
                     <tr key={l.key} className="border-b align-top">
-                      <td className="p-2">
+                      <td data-label="المادة" className="p-2">
                         <NativeSelect
                           aria-label="المادة"
                           value={l.item_id}
@@ -365,7 +365,7 @@ export function ProductionForm({
                           ))}
                         </NativeSelect>
                       </td>
-                      <td className="p-2">
+                      <td data-label="الوحدة" className="p-2">
                         <NativeSelect
                           aria-label="الوحدة"
                           value={l.unit_id}
@@ -382,7 +382,7 @@ export function ProductionForm({
                             ))}
                         </NativeSelect>
                       </td>
-                      <td className="p-2">
+                      <td data-label="الكمية المستهلكة" className="p-2">
                         <Input
                           aria-label="الكمية المستهلكة"
                           dir="ltr"
@@ -399,7 +399,7 @@ export function ProductionForm({
                           </div>
                         )}
                       </td>
-                      <td className="p-2 pt-4 tabular-nums">
+                      <td data-label="المعياري من الوصفة" className="p-2 pt-4 tabular-nums">
                         {item &&
                           (standard === null ? (
                             <span className="text-muted-foreground">ليست في الوصفة</span>
@@ -415,7 +415,7 @@ export function ProductionForm({
                             </>
                           ))}
                       </td>
-                      <td className="p-2 pt-4 tabular-nums">
+                      <td data-label="المتاح" className="p-2 pt-4 tabular-nums">
                         {item && (
                           <>
                             <span dir="ltr">{formatQtyUnits(stock)}</span> {item.unit}
@@ -427,7 +427,7 @@ export function ProductionForm({
                           </>
                         )}
                       </td>
-                      <td dir="ltr" className="p-2 pt-4 text-start tabular-nums">
+                      <td data-label="التكلفة (تقديرية)" dir="ltr" className="p-2 pt-4 text-start tabular-nums">
                         {cost === null ? "" : formatCents(cost)}
                       </td>
                       <td className="p-2">
@@ -515,7 +515,7 @@ export function ProductionForm({
               </p>
             </div>
 
-            <dl className="grid gap-2 rounded-md border p-3 text-sm sm:grid-cols-5">
+            <dl className="grid grid-cols-2 gap-2 rounded-md border p-3 text-sm sm:grid-cols-5">
               <div>
                 <dt className="text-muted-foreground">خامات مستهلكة</dt>
                 <dd dir="ltr" className="text-end font-semibold tabular-nums sm:text-start">

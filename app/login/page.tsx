@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "تسجيل الدخول" };
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4">
+    <main className="flex min-h-dvh items-center justify-center px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-xl">نظام المحاسبة والتصنيع</CardTitle>

@@ -59,7 +59,7 @@ export default async function ItemsPage({ searchParams }: PageProps<"/items">) {
         </div>
       </div>
 
-      <form className="flex flex-wrap items-end gap-3">
+      <form className="filter-bar flex flex-wrap items-end gap-3">
         <div className="grid gap-1">
           <Label htmlFor="q">بحث</Label>
           <Input id="q" name="q" defaultValue={q} placeholder="الكود أو الاسم أو الباركود" className="w-60" />

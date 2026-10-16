@@ -66,7 +66,7 @@ export default async function IncomeStatementPage({ searchParams }: PageProps<"/
 
       <PrintHeader company={settings?.company_name ?? ""} title="قائمة الدخل" subtitle={period} />
 
-      <form className="flex flex-wrap items-end gap-3 print:hidden">
+      <form className="filter-bar flex flex-wrap items-end gap-3 print:hidden">
         <div className="grid gap-1">
           <Label htmlFor="from">من تاريخ</Label>
           <DateInput id="from" name="from" defaultValue={from} className="w-36 text-end" />

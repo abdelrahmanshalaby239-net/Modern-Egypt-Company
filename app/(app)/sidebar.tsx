@@ -107,7 +107,8 @@ function sectionOf(href: string | undefined): string | undefined {
   return SECTIONS.find((s) => s.title && s.items.some((i) => i.href === href))?.title;
 }
 
-export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
+// onNavigate: يُستدعى عند اختيار رابط (لإغلاق درج الموبايل)
+export function Sidebar({ isAdmin, onNavigate }: { isAdmin: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
   const current = activeHref(pathname);
   const activeSection = sectionOf(current);
@@ -144,9 +145,10 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={onNavigate}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors md:py-2",
                       active ? "bg-lavender font-semibold text-foreground" : "text-foreground hover:bg-muted",
                     )}
                   >
@@ -172,7 +174,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
               aria-expanded={expanded}
               aria-controls={panelId}
               className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-start text-sm transition-colors hover:bg-muted",
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-start text-sm transition-colors hover:bg-muted md:py-2",
                 containsActive ? "font-semibold text-foreground" : "text-foreground",
               )}
             >
@@ -202,9 +204,10 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
                       <Link
                         key={item.href}
                         href={item.href}
+                        onClick={onNavigate}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "rounded-md px-3 py-1.5 text-sm transition-colors",
+                          "rounded-md px-3 py-2 text-sm transition-colors md:py-1.5",
                           active
                             ? "bg-lavender font-semibold text-foreground"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground",

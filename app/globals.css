@@ -93,6 +93,109 @@
   scrollbar-color: var(--border) transparent;
 }
 
+/* جداول سطور المستندات (الفواتير، القيود، الوصفات...): على الموبايل يصبح كل سطر بطاقة من عمودين، وأول خانة
+   بعرض البطاقة، وكل خانة تعرض اسم عمودها من data-label. صفوف المجموعات والإجماليات (بها colspan) سطر ملخص. */
+@media (width < 40rem) {
+  .line-table,
+  .line-table > tbody,
+  .line-table > tfoot {
+    display: block;
+  }
+  .line-table > thead {
+    display: none;
+  }
+  .line-table > tbody > tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem 0.75rem;
+    margin-bottom: 0.625rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+  }
+  .line-table > tbody > tr > td,
+  .line-table > tfoot > tr > td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+  }
+  .line-table > tbody > tr > td:first-child {
+    grid-column: 1 / -1;
+  }
+  .line-table > tbody > tr > td:empty {
+    display: none;
+  }
+  /* خانة الأزرار (حذف) آخر البطاقة على اليسار */
+  .line-table > tbody > tr > td:last-child:not([data-label]):not(:first-child) {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+  .line-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 500;
+    direction: rtl;
+    text-align: right;
+  }
+  .line-table td[dir="ltr"] {
+    text-align: right;
+  }
+  /* صفوف المجموعات والإجماليات الفرعية والختامية */
+  .line-table > tbody > tr:has(> td[colspan]),
+  .line-table > tfoot > tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin-bottom: 0.375rem;
+    padding: 0.25rem 0.125rem;
+    border: 0;
+    border-radius: 0;
+  }
+  .line-table > tbody > tr:has(> td[colspan]) > td:first-child {
+    grid-column: auto;
+  }
+  .line-table > tfoot > tr > td:empty {
+    display: none;
+  }
+}
+
+/* نماذج الفلترة في القوائم والتقارير: على الموبايل شبكة من عمودين، حقلا التاريخ جنبًا إلى جنب وباقي الحقول
+   بعرض الصف، وزر العرض تحتها. بدون تغيير على الشاشات الأكبر. */
+@media (width < 40rem) {
+  .filter-bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: 0.75rem;
+  }
+  .filter-bar > * {
+    min-width: 0;
+    grid-column: 1 / -1;
+  }
+  .filter-bar > :has(> input[inputmode="numeric"]) {
+    grid-column: auto;
+  }
+  .filter-bar :where(input, select) {
+    width: 100%;
+  }
+  .filter-bar > button {
+    justify-self: start;
+  }
+}
+
+/* خانات النصوص الطويلة في الجداول (البيان، الملاحظات، العنوان): عرض أدنى مقروء على الموبايل، والجدول يتمرر أفقيًا */
+@media (width < 40rem) {
+  [data-slot="table-cell"].whitespace-normal {
+    min-width: 11rem;
+  }
+}
+
 /* طباعة نظيفة على A4 (SPEC §8) */
 @media print {
   @page {

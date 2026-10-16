@@ -54,7 +54,7 @@ export default async function TreasuryPage({ searchParams }: PageProps<"/treasur
         />
       </div>
 
-      <form className="flex flex-wrap items-end gap-3 print:hidden">
+      <form className="filter-bar flex flex-wrap items-end gap-3 print:hidden">
         <div className="grid gap-1">
           <Label htmlFor="as_of">حتى تاريخ</Label>
           <DateInput id="as_of" name="as_of" defaultValue={asOf} className="w-36 text-end" />

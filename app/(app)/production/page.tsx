@@ -56,7 +56,7 @@ export default async function ProductionPage({ searchParams }: PageProps<"/produ
         </div>
       </div>
 
-      <form className="flex flex-wrap items-end gap-3">
+      <form className="filter-bar flex flex-wrap items-end gap-3">
         <div className="grid gap-1">
           <Label htmlFor="from">من تاريخ</Label>
           <DateInput id="from" name="from" defaultValue={from} className="w-36 text-end" />

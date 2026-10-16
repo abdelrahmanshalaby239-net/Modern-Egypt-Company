@@ -120,7 +120,7 @@ export function StockOpeningForm({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[40rem] text-sm">
+          <table className="line-table w-full text-sm sm:min-w-[40rem]">
             <thead>
               <tr className="border-b text-muted-foreground">
                 <th className="p-2 text-start font-semibold">الصنف</th>
@@ -144,7 +144,7 @@ export function StockOpeningForm({
                         <td className="p-2">
                           {item.code} - {item.name} <span className="text-muted-foreground">({item.unit})</span>
                         </td>
-                        <td className="p-2">
+                        <td data-label="الكمية" className="p-2">
                           <Input
                             aria-label={`كمية ${item.name}`}
                             dir="ltr"
@@ -154,7 +154,7 @@ export function StockOpeningForm({
                             onChange={(e) => setInput(item.id, "qty", e.target.value)}
                           />
                         </td>
-                        <td className="p-2">
+                        <td data-label="تكلفة الوحدة" className="p-2">
                           <Input
                             aria-label={`تكلفة وحدة ${item.name}`}
                             dir="ltr"
@@ -167,7 +167,7 @@ export function StockOpeningForm({
                             <div className="mt-1 text-xs text-muted-foreground">مقترح من بطاقة الصنف</div>
                           )}
                         </td>
-                        <td dir="ltr" className="p-2 text-start tabular-nums">
+                        <td data-label="القيمة" dir="ltr" className="p-2 text-start tabular-nums">
                           {row?.value ? formatCents(row.value) : ""}
                         </td>
                       </tr>

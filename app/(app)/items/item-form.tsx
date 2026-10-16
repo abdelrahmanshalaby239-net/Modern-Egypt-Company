@@ -273,7 +273,7 @@ export function ItemForm({
             ومعاملها وقت الاعتماد، ومعامل الوحدة المستخدمة لا يتغير.
           </p>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[40rem] text-sm">
+            <table className="line-table w-full text-sm sm:min-w-[40rem]">
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="p-2 text-start font-semibold">الوحدة</th>
@@ -289,9 +289,9 @@ export function ItemForm({
                   <td className="p-2 pt-4 font-semibold">
                     {baseUnit} <span className="text-xs font-normal text-muted-foreground">(أساسية)</span>
                   </td>
-                  <td className="p-2 pt-4 text-muted-foreground">1</td>
+                  <td data-label="معامل التحويل" className="p-2 pt-4 text-muted-foreground">1</td>
                   {isFinished && (
-                    <td className="p-2">
+                    <td data-label="سعر البيع" className="p-2">
                       <Input
                         aria-label="سعر بيع الوحدة الأساسية"
                         dir="ltr"
@@ -303,7 +303,7 @@ export function ItemForm({
                     </td>
                   )}
                   {isFinished && (
-                    <td className="p-2 pt-4">
+                    <td data-label="افتراضية للبيع" className="p-2 pt-4">
                       <input
                         type="radio"
                         name="default_unit"
@@ -314,15 +314,15 @@ export function ItemForm({
                       />
                     </td>
                   )}
-                  <td className="p-2 pt-4 text-muted-foreground">دائمًا</td>
+                  <td data-label="نشطة" className="p-2 pt-4 text-muted-foreground">دائمًا</td>
                   <td />
                 </tr>
                 {units.map((u) => (
                   <tr key={u.key} className="border-b align-top">
-                    <td className="p-2">
+                    <td data-label="الوحدة" className="p-2">
                       <Input aria-label="اسم الوحدة" value={u.name} placeholder="كرتونة، برميل..." onChange={(e) => setUnit(u.key, "name", e.target.value)} />
                     </td>
-                    <td className="p-2">
+                    <td data-label="معامل التحويل" className="p-2">
                       <Input
                         aria-label="معامل التحويل"
                         dir="ltr"
@@ -336,7 +336,7 @@ export function ItemForm({
                       </div>
                     </td>
                     {isFinished && (
-                      <td className="p-2">
+                      <td data-label="سعر البيع" className="p-2">
                         <Input
                           aria-label="سعر البيع"
                           dir="ltr"
@@ -348,7 +348,7 @@ export function ItemForm({
                       </td>
                     )}
                     {isFinished && (
-                      <td className="p-2 pt-4">
+                      <td data-label="افتراضية للبيع" className="p-2 pt-4">
                         <input
                           type="radio"
                           name="default_unit"
@@ -359,7 +359,7 @@ export function ItemForm({
                         />
                       </td>
                     )}
-                    <td className="p-2 pt-4">
+                    <td data-label="نشطة" className="p-2 pt-4">
                       <Checkbox
                         aria-label="نشطة"
                         checked={u.is_active}

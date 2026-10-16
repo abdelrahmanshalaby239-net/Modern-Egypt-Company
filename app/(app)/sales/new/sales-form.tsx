@@ -225,7 +225,7 @@ export function SalesForm({
   return (
     <Card>
       <CardContent className="grid gap-5">
-        <div className="grid gap-3 sm:grid-cols-[10rem_1fr_14rem]">
+        <div className="grid gap-3 sm:grid-cols-[10rem_1fr_14rem] md:max-lg:grid-cols-1">
           <div className="grid gap-2">
             <Label htmlFor="doc_date">التاريخ</Label>
             <Input
@@ -269,7 +269,7 @@ export function SalesForm({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[56rem] text-sm">
+          <table className="line-table w-full text-sm sm:min-w-[56rem]">
             <thead>
               <tr className="border-b text-muted-foreground">
                 <th className="p-2 text-start font-semibold">الصنف</th>
@@ -286,7 +286,7 @@ export function SalesForm({
                 const factor = unit ? (parseFactor(unit.factor) ?? 0n) : 0n;
                 return (
                   <tr key={l.key} className="border-b align-top">
-                    <td className="p-2">
+                    <td data-label="الصنف" className="p-2">
                       <NativeSelect
                         aria-label="الصنف"
                         value={l.item_id}
@@ -313,7 +313,7 @@ export function SalesForm({
                         </div>
                       )}
                     </td>
-                    <td className="p-2">
+                    <td data-label="الوحدة" className="p-2">
                       <NativeSelect
                         aria-label="الوحدة"
                         value={l.unit_id}
@@ -328,7 +328,7 @@ export function SalesForm({
                         ))}
                       </NativeSelect>
                     </td>
-                    <td className="p-2">
+                    <td data-label="الكمية" className="p-2">
                       <Input
                         aria-label="الكمية"
                         dir="ltr"
@@ -343,7 +343,7 @@ export function SalesForm({
                         </div>
                       )}
                     </td>
-                    <td className="p-2">
+                    <td data-label="سعر الوحدة" className="p-2">
                       <Input
                         aria-label="سعر الوحدة"
                         dir="ltr"
@@ -353,7 +353,7 @@ export function SalesForm({
                         onChange={(e) => updateLine(l.key, "unit_price", e.target.value)}
                       />
                     </td>
-                    <td dir="ltr" className="p-2 pt-4 text-start tabular-nums">
+                    <td data-label="الإجمالي" dir="ltr" className="p-2 pt-4 text-start tabular-nums">
                       {lineTotal === null ? "" : formatCents(lineTotal)}
                     </td>
                     <td className="p-2">
@@ -451,7 +451,7 @@ export function SalesForm({
           {receivedValue > 0n && treasuries.length === 0 && (
             <Alert variant="warning">لا توجد خزينة أو بنك نشط. حدّد حساب الخزينة من دليل الحسابات أولًا.</Alert>
           )}
-          <dl className="grid gap-2 text-sm sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
             <div>
               <dt className="text-muted-foreground">إجمالي الفاتورة</dt>
               <dd dir="ltr" className="text-end font-semibold tabular-nums sm:text-start">

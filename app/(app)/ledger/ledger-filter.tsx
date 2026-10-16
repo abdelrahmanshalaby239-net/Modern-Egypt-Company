@@ -29,7 +29,7 @@ export function LedgerFilter({
   const [kind, setKind] = useState<SubjectKind>(initialKind);
 
   return (
-    <form className="flex flex-wrap items-end gap-3 print:hidden">
+    <form className="filter-bar flex flex-wrap items-end gap-3 print:hidden">
       <div className="grid gap-1">
         <Label htmlFor="subject_kind">نوع الكشف</Label>
         <NativeSelect

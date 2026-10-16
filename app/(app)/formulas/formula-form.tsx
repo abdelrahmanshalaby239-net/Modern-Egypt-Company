@@ -175,7 +175,7 @@ export function FormulaForm({
               </NativeSelect>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[12rem_14rem_1fr] sm:items-start">
+          <div className="grid gap-3 sm:grid-cols-[12rem_14rem_1fr] sm:items-start md:max-lg:grid-cols-1">
             <div className="grid gap-2">
               <Label htmlFor="batch_qty">الكمية الناتجة من الدفعة</Label>
               <Input
@@ -226,7 +226,7 @@ export function FormulaForm({
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[48rem] text-sm">
+            <table className="line-table w-full text-sm sm:min-w-[48rem]">
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="p-2 text-start font-semibold">المادة</th>
@@ -239,7 +239,7 @@ export function FormulaForm({
               <tbody>
                 {parsed.map(({ line: l, item, unit, qty, base, cost }) => (
                   <tr key={l.key} className="border-b align-top">
-                    <td className="p-2">
+                    <td data-label="المادة" className="p-2">
                       <NativeSelect
                         aria-label="المادة"
                         value={l.item_id}
@@ -255,7 +255,7 @@ export function FormulaForm({
                           ))}
                       </NativeSelect>
                     </td>
-                    <td className="p-2">
+                    <td data-label="الوحدة" className="p-2">
                       <NativeSelect
                         aria-label="الوحدة"
                         value={l.unit_id}
@@ -270,7 +270,7 @@ export function FormulaForm({
                         ))}
                       </NativeSelect>
                     </td>
-                    <td className="p-2">
+                    <td data-label="الكمية لكل دفعة" className="p-2">
                       <Input
                         aria-label="الكمية لكل دفعة"
                         dir="ltr"
@@ -287,7 +287,7 @@ export function FormulaForm({
                         </div>
                       )}
                     </td>
-                    <td dir="ltr" className="p-2 pt-4 text-start tabular-nums">
+                    <td data-label="التكلفة التقديرية" dir="ltr" className="p-2 pt-4 text-start tabular-nums">
                       {cost === null ? "" : formatCents(cost)}
                     </td>
                     <td className="p-2">

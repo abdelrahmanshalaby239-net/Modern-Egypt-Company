@@ -7,7 +7,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "flex flex-col gap-4 rounded-2xl border bg-card py-5 text-card-foreground shadow-[0_1px_2px_rgb(0_0_0/0.03)]",
+        "flex flex-col gap-4 rounded-2xl border bg-card py-4 text-card-foreground sm:py-5 shadow-[0_1px_2px_rgb(0_0_0/0.03)]",
         className,
       )}
       {...props}
@@ -19,7 +19,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-header"
-      className={cn("flex flex-col gap-1.5 px-5", className)}
+      className={cn("flex flex-col gap-1.5 px-4 sm:px-5", className)}
       {...props}
     />
   );
@@ -47,7 +47,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div data-slot="card-content" className={cn("px-5", className)} {...props} />
+    <div data-slot="card-content" className={cn("px-4 sm:px-5", className)} {...props} />
   );
 }
 
@@ -55,7 +55,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
-      className={cn("flex items-center gap-2 px-5", className)}
+      className={cn("flex items-center gap-2 px-4 sm:px-5", className)}
       {...props}
     />
   );

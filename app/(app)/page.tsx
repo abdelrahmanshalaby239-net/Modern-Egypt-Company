@@ -189,9 +189,9 @@ export default async function HomePage() {
     .slice(0, RECENT_LIMIT);
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-4 sm:gap-6">
       <div className="grid gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">لوحة التحكم</h1>
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">لوحة التحكم</h1>
         {summary && (
           <p className="text-sm text-muted-foreground">
             الفترة من {formatDate(summary.month_start)} إلى {formatDate(summary.month_end)}
@@ -199,9 +199,9 @@ export default async function HomePage() {
         )}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
         {/* بطاقتا الشهر */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:col-span-2 lg:col-start-2 lg:row-start-1">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:col-span-2 lg:col-start-2 lg:row-start-1">
           {highlights.map((card) => {
             const Icon = card.icon;
             return (
@@ -209,20 +209,26 @@ export default async function HomePage() {
                 key={card.title}
                 href={`/income-statement?${monthRange}`}
                 className={cn(
-                  "group flex flex-col gap-2.5 rounded-2xl p-5 transition-shadow hover:shadow-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+                  "group flex flex-col gap-2 rounded-2xl p-4 transition-shadow sm:gap-2.5 sm:p-5 hover:shadow-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
                   card.className,
                 )}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="pt-1 text-base font-semibold">{card.title}</span>
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-background">
+                <div className="flex items-center justify-between gap-3 sm:items-start">
+                  <div className="grid gap-0.5 sm:pt-1">
+                    <span className="text-sm font-semibold sm:text-base">{card.title}</span>
+                    <span className="text-xs text-muted-foreground sm:hidden">{card.caption}</span>
+                  </div>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background sm:size-10">
                     <Icon className="size-5" strokeWidth={1.75} aria-hidden />
                   </span>
                 </div>
-                <span dir="ltr" className="text-end text-3xl leading-tight font-bold tracking-tight tabular-nums">
+                <span
+                  dir="ltr"
+                  className="text-end text-2xl leading-tight font-bold tracking-tight break-all tabular-nums sm:text-3xl"
+                >
                   {card.value}
                 </span>
-                <div className="flex items-center justify-between gap-3">
+                <div className="hidden items-center justify-between gap-3 sm:flex">
                   <span className="text-sm text-muted-foreground">{card.caption}</span>
                   <span className="flex size-7 items-center justify-center rounded-full bg-background">
                     <ChevronLeft
@@ -237,12 +243,12 @@ export default async function HomePage() {
         </div>
 
         {/* أهم المؤشرات (يمين) */}
-        <Card className="gap-0 py-0 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-          <CardHeader className="flex-row items-center gap-2 border-b py-4">
+        <Card className="gap-0 py-0 sm:py-0 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+          <CardHeader className="flex-row items-center gap-2 border-b py-3.5 sm:py-4">
             <ChartColumn className="size-5" strokeWidth={1.75} aria-hidden />
-            <CardTitle className="text-lg">أهم المؤشرات</CardTitle>
+            <CardTitle className="text-base sm:text-lg">أهم المؤشرات</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-1 flex-col px-2 py-1">
+          <CardContent className="flex flex-1 flex-col px-2 py-1 sm:px-2">
             {indicators.map((i, index) => {
               const Icon = i.icon;
               return (
@@ -250,7 +256,7 @@ export default async function HomePage() {
                   key={i.title}
                   href={i.href}
                   className={cn(
-                    "flex flex-1 items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+                    "flex flex-1 items-center gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-muted sm:px-3 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
                     index > 0 && "border-t",
                   )}
                 >
@@ -259,7 +265,7 @@ export default async function HomePage() {
                     strokeWidth={1.75}
                     aria-hidden
                   />
-                  <span className="flex-1 text-sm text-muted-foreground">{i.title}</span>
+                  <span className="min-w-0 flex-1 text-sm text-muted-foreground">{i.title}</span>
                   <span
                     dir="ltr"
                     className={cn("text-end text-base font-semibold tabular-nums", i.warn && "text-warning")}
@@ -276,16 +282,16 @@ export default async function HomePage() {
         <Card className="lg:col-span-2 lg:col-start-2 lg:row-start-2">
           <CardHeader className="flex-row items-center gap-2">
             <Zap className="size-5" strokeWidth={1.75} aria-hidden />
-            <CardTitle className="text-lg">العمليات السريعة</CardTitle>
+            <CardTitle className="text-base sm:text-lg">العمليات السريعة</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+          <CardContent className="grid grid-cols-3 gap-2 sm:gap-2.5">
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
                 <Link
                   key={action.href}
                   href={action.href}
-                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl border px-3 py-3.5 text-sm font-medium transition-colors hover:border-foreground/20 hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl border px-1.5 py-3 text-center text-xs leading-tight font-medium sm:px-3 sm:py-3.5 sm:text-sm transition-colors hover:border-foreground/20 hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
                   <Icon className="size-5" strokeWidth={1.5} aria-hidden />
                   {action.label}
@@ -299,10 +305,48 @@ export default async function HomePage() {
         <Card className="lg:col-span-3">
           <CardHeader className="flex-row items-center gap-2">
             <Clock className="size-5" strokeWidth={1.75} aria-hidden />
-            <CardTitle className="text-lg">آخر العمليات</CardTitle>
+            <CardTitle className="text-base sm:text-lg">آخر العمليات</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-xl border">
+            {/* الموبايل: بطاقات مضغوطة بدل الجدول */}
+            <ul className="grid gap-2 sm:hidden">
+              {rows.map((r) => (
+                <li key={r.key}>
+                  <Link
+                    href={r.href}
+                    className="grid gap-1.5 rounded-xl border px-3.5 py-3 transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="min-w-0 truncate text-sm font-medium">
+                        {r.type} <span className="text-muted-foreground">رقم</span>{" "}
+                        <span className="tabular-nums">{r.docNo}</span>
+                      </span>
+                      <span
+                        className={cn(
+                          "inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                          r.cancelled ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success",
+                        )}
+                      >
+                        {r.cancelled ? r.status.cancelled : r.status.active}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="min-w-0 truncate">{r.party}</span>
+                      <span dir="ltr" className="shrink-0 tabular-nums">
+                        {formatDate(r.date)}
+                      </span>
+                    </div>
+                    <div dir="ltr" className="text-start text-sm font-semibold tabular-nums">
+                      {formatAmount(r.amount)}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+              {rows.length === 0 && (
+                <li className="py-6 text-center text-sm text-muted-foreground">لا توجد عمليات مسجلة بعد.</li>
+              )}
+            </ul>
+            <div className="hidden overflow-hidden rounded-xl border sm:block">
               <Table>
                 <TableHeader className="bg-muted">
                   <TableRow className="hover:bg-muted">

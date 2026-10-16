@@ -138,7 +138,7 @@ export function JournalEntryForm({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[44rem] text-sm">
+          <table className="line-table w-full text-sm sm:min-w-[44rem]">
             <thead>
               <tr className="border-b text-muted-foreground">
                 <th className="p-2 text-start font-semibold">الحساب</th>
@@ -151,7 +151,7 @@ export function JournalEntryForm({
             <tbody>
               {lines.map((l) => (
                 <tr key={l.key} className="border-b">
-                  <td className="p-2">
+                  <td data-label="الحساب" className="p-2">
                     <NativeSelect
                       aria-label="الحساب"
                       value={l.account_id}
@@ -165,7 +165,7 @@ export function JournalEntryForm({
                       ))}
                     </NativeSelect>
                   </td>
-                  <td className="p-2">
+                  <td data-label="مدين" className="p-2">
                     <Input
                       aria-label="مدين"
                       dir="ltr"
@@ -175,7 +175,7 @@ export function JournalEntryForm({
                       onChange={(e) => updateLine(l.key, "debit", e.target.value)}
                     />
                   </td>
-                  <td className="p-2">
+                  <td data-label="دائن" className="p-2">
                     <Input
                       aria-label="دائن"
                       dir="ltr"
@@ -185,7 +185,7 @@ export function JournalEntryForm({
                       onChange={(e) => updateLine(l.key, "credit", e.target.value)}
                     />
                   </td>
-                  <td className="p-2">
+                  <td data-label="ملاحظة السطر" className="p-2">
                     <Input
                       aria-label="ملاحظة السطر"
                       value={l.description}
@@ -209,10 +209,10 @@ export function JournalEntryForm({
             <tfoot>
               <tr className="font-bold">
                 <td className="p-2">الإجمالي</td>
-                <td dir="ltr" className="p-2 text-start tabular-nums">
+                <td data-label="مدين" dir="ltr" className="p-2 text-start tabular-nums">
                   {formatCents(totalDebit)}
                 </td>
-                <td dir="ltr" className="p-2 text-start tabular-nums">
+                <td data-label="دائن" dir="ltr" className="p-2 text-start tabular-nums">
                   {formatCents(totalCredit)}
                 </td>
                 <td className={`p-2 ${difference === 0n ? "text-success" : "text-warning"}`} colSpan={2}>
