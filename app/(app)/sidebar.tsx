@@ -112,12 +112,12 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
   const current = activeHref(pathname);
   const activeSection = sectionOf(current);
 
-  // الأقسام المفتوحة: قسم الصفحة النشطة يُفتح تلقائيًا عند الانتقال إليه، والباقي بالضغط
+  // الأقسام مطوية افتراضيًا: عند الانتقال لقسم آخر يُفتح قسم الصفحة النشطة وحده، والباقي بالضغط
   const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set(activeSection ? [activeSection] : []));
   const [lastActive, setLastActive] = useState(activeSection);
   if (activeSection !== lastActive) {
     setLastActive(activeSection);
-    if (activeSection && !open.has(activeSection)) setOpen(new Set(open).add(activeSection));
+    setOpen(new Set(activeSection ? [activeSection] : []));
   }
 
   const toggle = (title: string) =>

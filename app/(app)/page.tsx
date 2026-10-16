@@ -126,7 +126,7 @@ export default async function HomePage() {
   const rows: RecentRow[] = [
     ...(sales.data ?? []).map((d) => ({
       key: `s${d.id}`,
-      type: "فاتورة بيع",
+      type: "فاتورة مبيعات",
       href: `/sales/${d.id}`,
       docNo: d.doc_no,
       date: d.doc_date,
@@ -138,7 +138,7 @@ export default async function HomePage() {
     })),
     ...(purchases.data ?? []).map((d) => ({
       key: `p${d.id}`,
-      type: "فاتورة شراء",
+      type: "فاتورة مشتريات",
       href: `/purchases/${d.id}`,
       docNo: d.doc_no,
       date: d.doc_date,
@@ -174,7 +174,7 @@ export default async function HomePage() {
     })),
     ...(production.data ?? []).map((d) => ({
       key: `m${d.id}`,
-      type: "تسجيل إنتاج",
+      type: "أمر إنتاج",
       href: `/production/${d.id}`,
       docNo: d.doc_no,
       date: d.doc_date,
@@ -209,22 +209,22 @@ export default async function HomePage() {
                 key={card.title}
                 href={`/income-statement?${monthRange}`}
                 className={cn(
-                  "group flex flex-col gap-4 rounded-2xl p-6 transition-shadow hover:shadow-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+                  "group flex flex-col gap-2.5 rounded-2xl p-5 transition-shadow hover:shadow-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
                   card.className,
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
                   <span className="pt-1 text-base font-semibold">{card.title}</span>
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-background">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-background">
                     <Icon className="size-5" strokeWidth={1.75} aria-hidden />
                   </span>
                 </div>
-                <span dir="ltr" className="text-end text-3xl font-bold tracking-tight tabular-nums">
+                <span dir="ltr" className="text-end text-3xl leading-tight font-bold tracking-tight tabular-nums">
                   {card.value}
                 </span>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm text-muted-foreground">{card.caption}</span>
-                  <span className="flex size-8 items-center justify-center rounded-full bg-background">
+                  <span className="flex size-7 items-center justify-center rounded-full bg-background">
                     <ChevronLeft
                       className="size-4 transition-transform group-hover:-translate-x-0.5"
                       aria-hidden
@@ -238,11 +238,11 @@ export default async function HomePage() {
 
         {/* أهم المؤشرات (يمين) */}
         <Card className="gap-0 py-0 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-          <CardHeader className="flex-row items-center gap-2 border-b py-5">
+          <CardHeader className="flex-row items-center gap-2 border-b py-4">
             <ChartColumn className="size-5" strokeWidth={1.75} aria-hidden />
             <CardTitle className="text-lg">أهم المؤشرات</CardTitle>
           </CardHeader>
-          <CardContent className="grid px-2 py-2">
+          <CardContent className="flex flex-1 flex-col px-2 py-1">
             {indicators.map((i, index) => {
               const Icon = i.icon;
               return (
@@ -250,7 +250,7 @@ export default async function HomePage() {
                   key={i.title}
                   href={i.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-4 transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+                    "flex flex-1 items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
                     index > 0 && "border-t",
                   )}
                 >
@@ -278,16 +278,16 @@ export default async function HomePage() {
             <Zap className="size-5" strokeWidth={1.75} aria-hidden />
             <CardTitle className="text-lg">العمليات السريعة</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <CardContent className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
                 <Link
                   key={action.href}
                   href={action.href}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border px-3 py-5 text-sm font-medium transition-colors hover:border-foreground/20 hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                  className="flex flex-col items-center justify-center gap-1.5 rounded-xl border px-3 py-3.5 text-sm font-medium transition-colors hover:border-foreground/20 hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
-                  <Icon className="size-6" strokeWidth={1.5} aria-hidden />
+                  <Icon className="size-5" strokeWidth={1.5} aria-hidden />
                   {action.label}
                 </Link>
               );
@@ -297,26 +297,16 @@ export default async function HomePage() {
 
         {/* آخر العمليات */}
         <Card className="lg:col-span-3">
-          <CardHeader className="flex-row items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Clock className="size-5" strokeWidth={1.75} aria-hidden />
-              <CardTitle className="text-lg">آخر العمليات</CardTitle>
-            </div>
-            <Link
-              href="/journal"
-              className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary"
-            >
-              عرض الكل
-              <ChevronLeft className="size-3.5" aria-hidden />
-            </Link>
+          <CardHeader className="flex-row items-center gap-2">
+            <Clock className="size-5" strokeWidth={1.75} aria-hidden />
+            <CardTitle className="text-lg">آخر العمليات</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-hidden rounded-xl border">
               <Table>
                 <TableHeader className="bg-muted">
                   <TableRow className="hover:bg-muted">
-                    <TableHead>نوع العملية</TableHead>
-                    <TableHead>رقم المستند</TableHead>
+                    <TableHead>المستند</TableHead>
                     <TableHead>التاريخ</TableHead>
                     <TableHead>الجهة / الصنف</TableHead>
                     <TableHead className="text-end">القيمة</TableHead>
@@ -327,11 +317,11 @@ export default async function HomePage() {
                   {rows.map((r) => (
                     <TableRow key={r.key}>
                       <TableCell>
-                        <Link href={r.href} className="underline-offset-4 hover:underline">
-                          {r.type}
+                        <Link href={r.href} className="font-medium underline-offset-4 hover:underline">
+                          {r.type} <span className="text-muted-foreground">رقم</span>{" "}
+                          <span className="tabular-nums">{r.docNo}</span>
                         </Link>
                       </TableCell>
-                      <TableCell className="tabular-nums">{r.docNo}</TableCell>
                       <TableCell dir="ltr" className="text-end tabular-nums">
                         {formatDate(r.date)}
                       </TableCell>
@@ -353,7 +343,7 @@ export default async function HomePage() {
                   ))}
                   {rows.length === 0 && (
                     <TableRow className="hover:bg-transparent">
-                      <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                      <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                         لا توجد عمليات مسجلة بعد.
                       </TableCell>
                     </TableRow>

@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <div className="flex min-h-dvh flex-col md:flex-row">
       <aside className="border-b bg-background md:sticky md:top-0 md:flex md:h-dvh md:w-64 md:shrink-0 md:flex-col md:border-e md:border-b-0 print:hidden">
         <div className="px-6 pt-6 pb-4 text-lg leading-snug font-bold">{settings?.company_name}</div>
-        <div className="md:min-h-0 md:flex-1 md:overflow-y-auto">
+        <div className="scrollbar-subtle md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-contain">
           <Sidebar isAdmin={profile.role === "admin"} />
         </div>
       </aside>

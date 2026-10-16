@@ -87,6 +87,12 @@
   }
 }
 
+/* شريط تمرير رفيع وهادئ للحاويات الداخلية (القائمة الجانبية) */
+@utility scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
 /* طباعة نظيفة على A4 (SPEC §8) */
 @media print {
   @page {
