@@ -19,6 +19,7 @@
   --primary-foreground: #ffffff;
 
   --muted: #f7f7f7; /* الأسطح الفاتحة */
+  --secondary: #e5e7e9; /* سطح رمادي أعمق: بطاقة مميزة ثانية */
   --muted-foreground: #737373; /* النص الثانوي */
   --accent: #f7f7f7; /* تمييز خفيف عند المرور */
   --lavender: #dce3fa; /* لمسة لونية هادئة: العنصر النشط وبطاقة مميزة */
@@ -52,6 +53,7 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-muted: var(--muted);
+  --color-secondary: var(--secondary);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-lavender: var(--lavender);
